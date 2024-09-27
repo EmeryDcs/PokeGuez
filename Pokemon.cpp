@@ -97,5 +97,5 @@ void Pokemon::setEtat(int etat)
 void Pokemon::attaquer(Pokemon& cible, Competence competence)
 {
 	//À modifier
-	cible.setPv(cible.getPv() - competence.getPuissance());
+	//cible.setPv(cible.getPv() - competence.getPuissance());
 }

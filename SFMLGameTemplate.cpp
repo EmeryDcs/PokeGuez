@@ -3,12 +3,66 @@
 #include <iostream>
 using namespace std;
 
-int HAUTEUR = 720;
-int LARGEUR = 1280;
+const int HAUTEUR = 720;
+const int LARGEUR = 1280;
+
+const sf::Texture POKEMONS;
+const sf::Texture POKEMONS_ENNEMIS;
+const sf::Texture PERSONNAGE;
+const sf::Texture TEXTUREMAP;
+const sf::Sprite MAP;
+
+int initialisation() {
+
+	//Initialisation des textures
+	sf::Texture pokemons;
+	if (!pokemons.loadFromFile("Ressource/images/sprisheet_pokemons.png"))
+		return EXIT_FAILURE;
+
+	sf::Texture pokemonsEnnemis;
+	if (!pokemonsEnnemis.loadFromFile("Ressource/images/sprisheet_pokemons.png")) // !!!!!!!! spritesheet à changer !!!!!!!!
+		return EXIT_FAILURE;
+
+	sf::Texture personnage;
+	if (!personnage.loadFromFile("Ressource/images/sprisheet_personnage.png"))
+		return EXIT_FAILURE;
+
+	//Initialisation de la map
+
+	sf::Texture textureMap;
+	if (!textureMap.loadFromFile("Ressource/images/map/map.png"))
+		return EXIT_FAILURE;
+	sf::Sprite map(textureMap);
+}
 
 int main()
 {
+	//Création de la fenêtre
+	sf::RenderWindow window(sf::VideoMode(LARGEUR, HAUTEUR), "Pokéguez");
 
+	//Initialisation des textures et de la map
+	if (initialisation() == EXIT_FAILURE)
+		return EXIT_FAILURE;
+
+	//Boucle de la fenêtre
+	while (window.isOpen()) {
+		sf::Event event;
+
+		//Gestion des évènements 
+		while (window.pollEvent(event))
+		{
+			//check les events
+			break;
+		}
+
+		//Affichage des éléments
+
+		window.clear();
+		
+		window.draw(MAP);
+
+		window.display();
+	}
 }
 
 
