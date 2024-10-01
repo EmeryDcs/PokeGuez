@@ -2,9 +2,11 @@
 #include <iostream>
 #include <string>
 #include "Competence.h"
+#include "Perso.h"
 using namespace std;
 
-class Pokemon
+class Pokemon :
+	public Perso
 {
 	string nom;
 	string type;
@@ -16,7 +18,7 @@ class Pokemon
 
 public:
 	Pokemon();
-	Pokemon(string nom, string type, int pv, int attaque, int vitesse, Competence competence[4], int etat);
+	Pokemon(string nom, string type, int pv, int attaque, int vitesse, Competence competence[4], int etat, sf::Texture& texture, sf::IntRect rect);
 
 	string getNom();
 	void setNom(string nom);
@@ -32,6 +34,7 @@ public:
 	void setCompetence(int i, Competence competence);
 	int getEtat();
 	void setEtat(int etat);
+	void loop();
 
 	void attaquer(Pokemon& cible, Competence competence);
 	

@@ -1,4 +1,5 @@
 #include "Pokemon.h"
+#include "Perso.h"
 
 Pokemon::Pokemon()
 {
@@ -10,7 +11,8 @@ Pokemon::Pokemon()
 	etat = 0;
 }
 
-Pokemon::Pokemon(string nom, string type, int pv, int attaque, int vitesse, Competence competence[4], int etat)
+Pokemon::Pokemon(string nom, string type, int pv, int attaque, int vitesse, Competence competence[4], int etat, sf::Texture& texture, sf::IntRect rect)
+	: Perso(texture, rect)
 {
 	this->nom = nom;
 	this->type = type;
@@ -92,6 +94,16 @@ int Pokemon::getEtat()
 void Pokemon::setEtat(int etat)
 {
 	this->etat = etat;
+}
+
+void Pokemon::loop() {
+	if (horloge.getElapsedTime().asSeconds() > .05f) {
+		rect.left += 100;
+		if (rect.left >= 2000)
+			rect.left = 0;
+		sprite.setTextureRect(rect);
+		horloge.restart();
+	}
 }
 
 void Pokemon::attaquer(Pokemon& cible, Competence competence)

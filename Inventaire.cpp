@@ -5,9 +5,9 @@ using namespace std;
 
 Inventaire::Inventaire()
 {
-	nbPotion = 0;
-	nbSpray = 0;
-	nbPokeball = 0;
+	nbPotion = 10;
+	nbSpray = 10;
+	nbPokeball = 10;
 }
 
 Inventaire::Inventaire(int nbPotion, int nbSpray, int nbPokeball)

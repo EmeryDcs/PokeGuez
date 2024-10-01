@@ -1,38 +1,137 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <string>
+#include "Joueur.h"
+#include "Pokemon.h"
 using namespace std;
 
 const int HAUTEUR = 720;
 const int LARGEUR = 1280;
+const float SCALE_L = 3.878787878787879;
+const float SCALE_H = 3.287671232876712;
 
-const sf::Texture POKEMONS;
-const sf::Texture POKEMONS_ENNEMIS;
-const sf::Texture PERSONNAGE;
-const sf::Texture TEXTUREMAP;
-const sf::Sprite MAP;
+sf::Texture POKEMONS;
+sf::Texture POKEMONS_ENNEMIS;
+sf::Texture PERSONNAGE;
+sf::Texture TEXTUREMAP;
+sf::Texture TEXTURE_FOND_COMBAT;
+sf::Texture TEXTURE_HUD_TEXTE;
+sf::Texture TEXTURE_HUD_CHOIX_ACTION;
+sf::Texture TEXTURE_HUD_CHOIX_COMPETENCE;
+sf::Sprite MAP;
+sf::Sprite FOND_COMBAT;
+sf::Sprite HUD;
+
+sf::Image MASQUE;
 
 int initialisation() {
-
 	//Initialisation des textures
-	sf::Texture pokemons;
-	if (!pokemons.loadFromFile("Ressource/images/sprisheet_pokemons.png"))
+	if (!POKEMONS.loadFromFile("Ressource/images/sprisheet_pokemons.png"))
 		return EXIT_FAILURE;
 
-	sf::Texture pokemonsEnnemis;
-	if (!pokemonsEnnemis.loadFromFile("Ressource/images/sprisheet_pokemons.png")) // !!!!!!!! spritesheet à changer !!!!!!!!
+	if (!POKEMONS_ENNEMIS.loadFromFile("Ressource/images/sprisheet_pokemons.png")) // !!!!!!!! spritesheet à changer !!!!!!!!
 		return EXIT_FAILURE;
 
-	sf::Texture personnage;
-	if (!personnage.loadFromFile("Ressource/images/sprisheet_personnage.png"))
+	if (!PERSONNAGE.loadFromFile("Ressource/images/sprisheet_personnage.png"))
 		return EXIT_FAILURE;
 
 	//Initialisation de la map
-
-	sf::Texture textureMap;
-	if (!textureMap.loadFromFile("Ressource/images/map/map.png"))
+	if (!TEXTUREMAP.loadFromFile("Ressource/images/map/map.png"))
 		return EXIT_FAILURE;
-	sf::Sprite map(textureMap);
+	MAP.setTexture(TEXTUREMAP);
+	MAP.setPosition(0, 0);
+
+	//Initialisation du masque
+	if (!MASQUE.loadFromFile("Ressource/images/map/masque.png"))
+		return EXIT_FAILURE;
+
+	if (!TEXTURE_FOND_COMBAT.loadFromFile("Ressource/images/combat/battle_arena_fond.png"))
+		return EXIT_FAILURE;
+	FOND_COMBAT.setTexture(TEXTURE_FOND_COMBAT);
+	FOND_COMBAT.setScale(SCALE_L, SCALE_H);
+	FOND_COMBAT.setPosition(0, 0);
+
+	if (!TEXTURE_HUD_TEXTE.loadFromFile("Ressource/images/combat/battle_arena_encart_texte.png"))
+		return EXIT_FAILURE;
+
+	if (!TEXTURE_HUD_CHOIX_ACTION.loadFromFile("Ressource/images/combat/battle_arena_encart_texte_+_choix.png"))
+		return EXIT_FAILURE;
+	HUD.setTexture(TEXTURE_HUD_CHOIX_ACTION);
+	HUD.setScale(SCALE_L, SCALE_H);
+	HUD.setPosition(0, 0);
+
+	if (!TEXTURE_HUD_CHOIX_COMPETENCE.loadFromFile("Ressource/images/combat/battle_arena_encart_competences.png"))
+		return EXIT_FAILURE;
+	
+
+	return EXIT_SUCCESS;
+}
+
+void creation(Joueur& joueur, Pokemon tabPokemon[2]) {
+	//Création des Pokemons
+	Competence competencesAerodactyl[4];
+	Competence competencesDimoret[4];
+	tabPokemon[0] = Pokemon("Aerodactyl", "Vol", 120, 10, 10, competencesAerodactyl, 0, POKEMONS_ENNEMIS, sf::IntRect(0,0,100,100));
+	tabPokemon[1] = Pokemon("Dimoret", "Normal", 120, 10, 10, competencesDimoret, 0, POKEMONS_ENNEMIS, sf::IntRect(0, 100, 100, 100));
+
+	//Création du joueur
+	Inventaire inventaire = Inventaire();
+	joueur = Joueur("Sacha", tabPokemon, inventaire, PERSONNAGE, sf::IntRect(0, 0, 32, 35));
+	joueur.getSprite().setPosition(450, 300); 
+	joueur.getSprite().setOrigin(16, 17);
+}
+
+sf::Vector2f collisionsEtBordures(sf::Vector2f vecteurDeplacement, Joueur& joueur) {
+	// Gestion des collisions
+	sf::Vector2f playerCenterPosition(joueur.getSprite().getPosition().x, joueur.getSprite().getPosition().y+14);
+	sf::Vector2i nextPixelPosition(playerCenterPosition.x + vecteurDeplacement.x * 10 * 100, playerCenterPosition.y + vecteurDeplacement.y * 2 * 100);
+	int nextPixelColored = MASQUE.getPixel(nextPixelPosition.x, nextPixelPosition.y).toInteger();
+
+
+	if (nextPixelColored == 255) {
+		vecteurDeplacement = sf::Vector2f(0, 0);
+	}
+
+	// Gestion des bordures
+	if (nextPixelPosition.x < 5 || nextPixelPosition.x > MAP.getGlobalBounds().width + 5 || nextPixelPosition.y < 5 || nextPixelPosition.y > MAP.getGlobalBounds().height + 5) {
+		vecteurDeplacement = sf::Vector2f(0, 0);
+	}
+
+	return vecteurDeplacement;
+}
+
+bool estSurCaseVerte(Joueur& joueur) {
+	int couleurPixelMasque = MASQUE.getPixel(joueur.getSprite().getPosition().x, joueur.getSprite().getPosition().y).toInteger();
+
+	if (couleurPixelMasque == 598040063) {
+		return true;
+	}
+	else
+		return false;
+}
+
+void hud(int action) {
+	if (action == 0) {
+		HUD.setTexture(TEXTURE_HUD_CHOIX_ACTION);
+	}
+	else if (action == 1) {
+		HUD.setTexture(TEXTURE_HUD_CHOIX_COMPETENCE);
+	}
+	else if (action == 2) {
+		HUD.setTexture(TEXTURE_HUD_TEXTE);
+	}
+}
+
+void texte(int action) {
+	switch (action) {
+	case "choix_action":
+		break;
+	case "choix_competence":
+		break;
+	case "combat":
+		break;
+	}
 }
 
 int main()
@@ -41,8 +140,39 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(LARGEUR, HAUTEUR), "Pokéguez");
 
 	//Initialisation des textures et de la map
-	if (initialisation() == EXIT_FAILURE)
+	if (initialisation() == EXIT_FAILURE) {
+		cout << "Erreur lors de l'initialisation des textures" << endl;
 		return EXIT_FAILURE;
+	}
+
+	//Création des personnages et Pokemons
+	Joueur joueur;
+	Pokemon aerodactyl;
+	Pokemon dimoret;
+	Pokemon tabPokemon[2];
+
+	creation(joueur, tabPokemon);
+
+	//Camera du jeu 
+	float zoom = 0.4f;
+	sf::View gameView(sf::FloatRect(0, 0, LARGEUR, HAUTEUR));
+	gameView.setSize(window.getSize().x * zoom, window.getSize().y * zoom);
+	gameView.setCenter(joueur.getSprite().getPosition());
+	window.setView(gameView);
+	const float minCameraX = gameView.getSize().x / 2.0f;
+	const float minCameraY = gameView.getSize().y / 2.0f;
+	const float maxCameraX = MAP.getGlobalBounds().width - minCameraX;
+	const float maxCameraY = MAP.getGlobalBounds().height - minCameraY;
+	float newCameraX = 0;
+	float newCameraY = 0;
+	sf::Vector2f vecteurDeplacement = sf::Vector2f(0, 0);
+
+	//Booléen pour savoir si le joueur est en combat
+	bool combat = false;
+
+	//Entier pour connaître l'action du joueur
+	int action = 0; // 0. choix_action 1. choix_competence 2. combat
+		
 
 	//Boucle de la fenêtre
 	while (window.isOpen()) {
@@ -51,17 +181,88 @@ int main()
 		//Gestion des évènements 
 		while (window.pollEvent(event))
 		{
-			//check les events
-			break;
+			switch (event.type) {
+			case sf::Event::Closed:
+				window.close();
+				break;
+			case sf::Event::KeyPressed:
+				if (event.key.code == sf::Keyboard::Up) {
+					vecteurDeplacement = sf::Vector2f(0, -.010);
+				}
+				else if (event.key.code == sf::Keyboard::Down) {
+					vecteurDeplacement = sf::Vector2f(0, .010);
+				}
+				else if (event.key.code == sf::Keyboard::Left) {
+					vecteurDeplacement = sf::Vector2f(-.010, 0);
+				}
+				else if (event.key.code == sf::Keyboard::Right) {
+					vecteurDeplacement = sf::Vector2f(.010, 0);
+				}
+				break;
+			case sf::Event::KeyReleased:
+				vecteurDeplacement = sf::Vector2f(0, 0);
+			}
 		}
 
-		//Affichage des éléments
+		if (combat) {
+			//---------Code et affichage pour le combat--------
 
-		window.clear();
-		
-		window.draw(MAP);
+			//cout << HUD.getPosition().x << " " << HUD.getPosition().y << endl;
 
-		window.display();
+			window.clear();
+
+			//Affichage du fond de combat
+			
+			window.draw(FOND_COMBAT);
+
+			//Affichage des pokemons
+
+			//Loop sur les animations des pokemons
+			for (int i = 0; i < 2; i++) {
+				tabPokemon[i].loop();
+				window.draw(tabPokemon[i].getSprite());
+			}
+			 
+			
+			//Affichage de l'HUD.
+
+			hud(action);
+			window.draw(HUD);
+
+			//Affichage du texte
+			texte(action);
+
+			//Gestion de la View
+			gameView.setSize(window.getSize().x, window.getSize().y);
+			gameView.setCenter(window.getSize().x / 2, window.getSize().y / 2);
+			window.setView(gameView);
+
+			window.display();
+		}
+		else {
+			//---------Code et affichage pour l'exploration--------
+			
+			//Vérifications des collisions et bordures puis déplacement du joueur.
+			combat = estSurCaseVerte(joueur);
+			vecteurDeplacement = collisionsEtBordures(vecteurDeplacement, joueur);
+			joueur.deplacement(vecteurDeplacement);
+
+			//Affichage des éléments
+
+			window.clear();
+
+			window.draw(MAP);
+
+			newCameraX = min(max(minCameraX, joueur.getSprite().getPosition().x), maxCameraX);
+			newCameraY = min(max(minCameraY, joueur.getSprite().getPosition().y), maxCameraY);
+
+			gameView.setCenter(newCameraX, newCameraY);
+			window.setView(gameView);
+
+			window.draw(joueur.getSprite());
+
+			window.display();
+		}
 	}
 }
 

@@ -7,13 +7,16 @@ using namespace std;
 
 class Perso
 {
+protected:
 	sf::Texture texture;
 	sf::Sprite sprite;
 	sf::IntRect rect;
-	sf::Clock horlogeAnim;
+	sf::Clock horloge;
 
 public:
 	Perso();
-	Perso(sf::Texture texture, sf::Sprite sprite, sf::IntRect rect);
+	Perso(sf::Texture& texture, sf::IntRect rect);
+
+	sf::Sprite& getSprite();
 };
 
