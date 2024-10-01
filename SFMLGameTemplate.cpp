@@ -6,10 +6,14 @@
 #include "Pokemon.h"
 using namespace std;
 
-const int HAUTEUR = 720;
-const int LARGEUR = 1280;
+const int HAUTEUR	= 720;
+const int LARGEUR	= 1280;
 const float SCALE_L = 3.878787878787879;
 const float SCALE_H = 3.287671232876712;
+const int POSX_BOUTON_GAUCHE	= 890;
+const int POSX_BOUTON_DROITE	= 1090;
+const int POSY_BOUTON_HAUT		= 580;
+const int POSY_BOUTON_BAS		= 650;
 
 sf::Texture POKEMONS;
 sf::Texture POKEMONS_ENNEMIS;
@@ -19,13 +23,12 @@ sf::Texture TEXTURE_FOND_COMBAT;
 sf::Texture TEXTURE_HUD_TEXTE;
 sf::Texture TEXTURE_HUD_CHOIX_ACTION;
 sf::Texture TEXTURE_HUD_CHOIX_COMPETENCE;
-sf::Sprite MAP;
-sf::Sprite FOND_COMBAT;
-sf::Sprite HUD;
-sf::Font FONT;
-sf::Text TEXTE;
-
-sf::Image MASQUE;
+sf::Sprite	MAP;
+sf::Sprite	FOND_COMBAT;
+sf::Sprite	HUD;
+sf::Font	FONT;
+sf::Text	TEXTE;
+sf::Image	MASQUE;
 
 int initialisation() {
 	//Initialisation des textures
@@ -141,7 +144,13 @@ void hud(int action) {
 		HUD.setTexture(TEXTURE_HUD_CHOIX_COMPETENCE);
 		break;
 	case 2:
+		cout << "Soin" << endl;
+		break;
+	case 3:
 		HUD.setTexture(TEXTURE_HUD_TEXTE);
+		break;
+	case 4:
+		cout << "Fuir" << endl;
 		break;
 	}
 }
@@ -156,6 +165,32 @@ void texte(int action) {
 	case 2:
 		break;
 	}
+}
+
+int checkPosition(sf::RenderWindow& window) {
+	sf::Vector2i position = sf::Mouse::getPosition(window);
+	cout << "CheckPosition : " << position.x << ";" << position.y << endl;
+	TEXTE.setString("");
+	//Bouton Haut Gauche
+	if ((position.x >= POSX_BOUTON_GAUCHE && position.x < POSX_BOUTON_DROITE) && (position.y >= POSY_BOUTON_HAUT && position.y < POSY_BOUTON_BAS))
+		return 1;
+	//Bouton Haut Droite
+	else if ((position.x >= POSX_BOUTON_DROITE && position.x < POSX_BOUTON_DROITE + 200) && (position.y >= POSY_BOUTON_HAUT && position.y < POSY_BOUTON_BAS))
+		return 2;
+	//Bouton Bas Gauche
+	else if ((position.x >= POSX_BOUTON_GAUCHE && position.x < POSX_BOUTON_DROITE) && (position.y >= POSY_BOUTON_BAS && position.y < POSY_BOUTON_BAS + 70))
+		return 3;
+	//Bouton Bas Droite
+	else if ((position.x >= POSX_BOUTON_DROITE && position.x < POSX_BOUTON_DROITE + 200) && (position.y >= POSY_BOUTON_BAS && position.y < POSY_BOUTON_BAS + 70))
+		return 4;
+	else
+		return 0;
+}
+
+void checkPositionCompetence(sf::RenderWindow& window) {
+	sf::Vector2i position = sf::Mouse::getPosition(window);
+	cout << "CheckPositionCompetence : " << position.x << ";" << position.y << endl;
+	TEXTE.setString("");
 }
 
 int main()
@@ -196,9 +231,8 @@ int main()
 	bool combat = false;
 
 	//Entier pour connaître l'action du joueur
-	int action = 0; // 0. choix_action 1. choix_competence 2. combat
+	int action = 0; // 0. choix_action 1. competence 2. soin 3. pokéball 4. fuir
 		
-
 	//Boucle de la fenêtre
 	while (window.isOpen()) {
 		sf::Event event;
@@ -226,6 +260,13 @@ int main()
 				break;
 			case sf::Event::KeyReleased:
 				vecteurDeplacement = sf::Vector2f(0, 0);
+			case sf::Event::MouseButtonPressed:
+				if (event.mouseButton.button == sf::Mouse::Left) {
+					if (action == 0)
+						action = checkPosition(window);
+					else
+						checkPositionCompetence(window);
+				}
 			}
 		}
 
@@ -248,7 +289,7 @@ int main()
 			window.draw(tabPokemon[0].getSprite());
 			tabPokemonEnnemi[1].loop();
 			window.draw(tabPokemonEnnemi[1].getSprite());
-			 
+			
 			
 			//Affichage de l'HUD.
 
