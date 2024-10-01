@@ -22,6 +22,8 @@ sf::Texture TEXTURE_HUD_CHOIX_COMPETENCE;
 sf::Sprite MAP;
 sf::Sprite FOND_COMBAT;
 sf::Sprite HUD;
+sf::Font FONT;
+sf::Text TEXTE;
 
 sf::Image MASQUE;
 
@@ -64,16 +66,35 @@ int initialisation() {
 	if (!TEXTURE_HUD_CHOIX_COMPETENCE.loadFromFile("Ressource/images/combat/battle_arena_encart_competences.png"))
 		return EXIT_FAILURE;
 	
+	//Initialisation du texte
+	if (!FONT.loadFromFile("Ressource/font/pokemon.ttf"))
+		return EXIT_FAILURE;
+	TEXTE.setFont(FONT);
+	TEXTE.setCharacterSize(24);
+	TEXTE.setFillColor(sf::Color::White);
+	TEXTE.setPosition(75, 600);
+	TEXTE.setString("");
 
 	return EXIT_SUCCESS;
 }
 
-void creation(Joueur& joueur, Pokemon tabPokemon[2]) {
+void creation(Joueur& joueur, Pokemon tabPokemon[2], Pokemon tabPokemonEnnemi[2]) {
 	//Création des Pokemons
 	Competence competencesAerodactyl[4];
 	Competence competencesDimoret[4];
 	tabPokemon[0] = Pokemon("Aerodactyl", "Vol", 120, 10, 10, competencesAerodactyl, 0, POKEMONS_ENNEMIS, sf::IntRect(0,0,100,100));
 	tabPokemon[1] = Pokemon("Dimoret", "Normal", 120, 10, 10, competencesDimoret, 0, POKEMONS_ENNEMIS, sf::IntRect(0, 100, 100, 100));
+	tabPokemon[0].getSprite().setPosition(225, 334);
+	tabPokemon[0].getSprite().setScale(4,4);
+	tabPokemon[1].getSprite().setPosition(225, 334);
+	tabPokemon[1].getSprite().setScale(4,4);
+
+	tabPokemonEnnemi[0] = Pokemon("Aerodactyl", "Vol", 120, 10, 10, competencesAerodactyl, 0, POKEMONS_ENNEMIS, sf::IntRect(0, 0, 100, 100));
+	tabPokemonEnnemi[1] = Pokemon("Dimoret", "Normal", 120, 10, 10, competencesDimoret, 0, POKEMONS_ENNEMIS, sf::IntRect(0, 100, 100, 100));
+	tabPokemonEnnemi[0].getSprite().setPosition(930, 0);
+	tabPokemonEnnemi[0].getSprite().setScale(4,4);
+	tabPokemonEnnemi[1].getSprite().setPosition(930, 0);
+	tabPokemonEnnemi[1].getSprite().setScale(4,4);
 
 	//Création du joueur
 	Inventaire inventaire = Inventaire();
@@ -112,24 +133,27 @@ bool estSurCaseVerte(Joueur& joueur) {
 }
 
 void hud(int action) {
-	if (action == 0) {
+	switch (action) {
+	case 0:
 		HUD.setTexture(TEXTURE_HUD_CHOIX_ACTION);
-	}
-	else if (action == 1) {
+		break;
+	case 1:
 		HUD.setTexture(TEXTURE_HUD_CHOIX_COMPETENCE);
-	}
-	else if (action == 2) {
+		break;
+	case 2:
 		HUD.setTexture(TEXTURE_HUD_TEXTE);
+		break;
 	}
 }
 
 void texte(int action) {
 	switch (action) {
-	case "choix_action":
+	case 0:
+		TEXTE.setString("Un Pokémon sauvage apparaît !\n Que voulez-vous faire ?");
 		break;
-	case "choix_competence":
+	case 1:
 		break;
-	case "combat":
+	case 2:
 		break;
 	}
 }
@@ -150,8 +174,9 @@ int main()
 	Pokemon aerodactyl;
 	Pokemon dimoret;
 	Pokemon tabPokemon[2];
+	Pokemon tabPokemonEnnemi[2];
 
-	creation(joueur, tabPokemon);
+	creation(joueur, tabPokemon, tabPokemonEnnemi);
 
 	//Camera du jeu 
 	float zoom = 0.4f;
@@ -218,10 +243,11 @@ int main()
 			//Affichage des pokemons
 
 			//Loop sur les animations des pokemons
-			for (int i = 0; i < 2; i++) {
-				tabPokemon[i].loop();
-				window.draw(tabPokemon[i].getSprite());
-			}
+
+			tabPokemon[0].loop();
+			window.draw(tabPokemon[0].getSprite());
+			tabPokemonEnnemi[1].loop();
+			window.draw(tabPokemonEnnemi[1].getSprite());
 			 
 			
 			//Affichage de l'HUD.
@@ -231,6 +257,7 @@ int main()
 
 			//Affichage du texte
 			texte(action);
+			window.draw(TEXTE);
 
 			//Gestion de la View
 			gameView.setSize(window.getSize().x, window.getSize().y);
