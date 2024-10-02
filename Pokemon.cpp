@@ -6,6 +6,7 @@ Pokemon::Pokemon()
 	nom = "";
 	type = "";
 	pv = 0;
+	pvMax = 0;
 	attaque = 0;
 	vitesse = 0;
 	etat = 0;
@@ -17,6 +18,7 @@ Pokemon::Pokemon(string nom, string type, int pv, int attaque, int vitesse, Comp
 	this->nom = nom;
 	this->type = type;
 	this->pv = pv;
+	this->pvMax = pv;
 	this->attaque = attaque;
 	this->vitesse = vitesse;
 	for (int i = 0; i < 4; i++)
@@ -96,6 +98,11 @@ void Pokemon::setEtat(int etat)
 	this->etat = etat;
 }
 
+int Pokemon::getPvMax()
+{
+	return pvMax;
+}
+
 void Pokemon::loop() {
 	if (horloge.getElapsedTime().asSeconds() > .05f) {
 		rect.left += 100;
@@ -110,4 +117,9 @@ void Pokemon::attaquer(Pokemon& cible, Competence competence)
 {
 	//À modifier
 	//cible.setPv(cible.getPv() - competence.getPuissance());
+}
+
+void Pokemon::soin()
+{
+	pv += 10;
 }

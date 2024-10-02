@@ -11,6 +11,7 @@ class Pokemon :
 	string nom;
 	string type;
 	int pv;
+	int pvMax;
 	int attaque;
 	int vitesse;
 	Competence competence[4];
@@ -34,9 +35,10 @@ public:
 	void setCompetence(int i, Competence competence);
 	int getEtat();
 	void setEtat(int etat);
+	int getPvMax();
 	void loop();
 
 	void attaquer(Pokemon& cible, Competence competence);
-	
+	void soin();
 };
 

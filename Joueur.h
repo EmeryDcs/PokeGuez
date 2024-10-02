@@ -20,7 +20,7 @@ class Joueur :
 public:
 	Joueur();
 	Joueur(string nom);
-	Joueur(string nom, Pokemon tabPokemon[6], Inventaire inventaire, sf::Texture& texture, sf::IntRect rect);
+	Joueur(string nom, Pokemon starter, Inventaire inventaire, sf::Texture& texture, sf::IntRect rect);
 
 	string getNom();
 	void setNom(string nom);
@@ -29,5 +29,8 @@ public:
 	Inventaire getInventaire();
 	void deplacement(sf::Vector2f);
 	void loop();
+	void soin(int i);
+	string pokeball(Pokemon pokemon);
+	void loopPokemon();
 };
 
