@@ -11,6 +11,15 @@ Competence::Competence()
 	debuff = "";
 }
 
+Competence::Competence(string nom)
+{
+	this->nom = nom;
+	multiplicateur = 1;
+	effet = "";
+	buff = "";
+	debuff = "";
+}
+
 Competence::Competence(string nom, int multiplicateur, string effet, string buff, string debuff)
 {
 	this->nom = nom;

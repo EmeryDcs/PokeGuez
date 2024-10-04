@@ -33,7 +33,7 @@ void Joueur::setNom(string nom)
 	this->nom = nom;
 }
 
-Pokemon Joueur::getPokemon(int i)
+Pokemon& Joueur::getPokemon(int i)
 {
 	return tabPokemon[i];
 }
@@ -84,7 +84,7 @@ void Joueur::soin(int i)
 	inventaire.utiliserPotion();
 }
 
-string Joueur::pokeball(Pokemon pokemon)
+string Joueur::pokeball(Pokemon pokemon, sf::Texture texture)
 {
 	int random = rand() % 2;
 	inventaire.utiliserPokeball();
@@ -92,6 +92,7 @@ string Joueur::pokeball(Pokemon pokemon)
 		for (int i = 0; i < sizeof(tabPokemon)/sizeof(tabPokemon[0]) - 1; i++) {
 			if (tabPokemon[i].getNom() == "") {
 				tabPokemon[i] = pokemon;
+				tabPokemon[i].getSprite().setTexture(texture);
 				return "Capture reussie";
 			}
 		}

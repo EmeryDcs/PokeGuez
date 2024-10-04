@@ -24,13 +24,13 @@ public:
 
 	string getNom();
 	void setNom(string nom);
-	Pokemon getPokemon(int i);
+	Pokemon& getPokemon(int i);
 	void setPokemon(int i, Pokemon pokemon);
 	Inventaire getInventaire();
 	void deplacement(sf::Vector2f);
 	void loop();
 	void soin(int i);
-	string pokeball(Pokemon pokemon);
+	string pokeball(Pokemon pokemon, sf::Texture texture);
 	void loopPokemon();
 };
 

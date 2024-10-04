@@ -104,7 +104,7 @@ int Pokemon::getPvMax()
 }
 
 void Pokemon::loop() {
-	if (horloge.getElapsedTime().asSeconds() > .05f) {
+	if (horloge.getElapsedTime().asSeconds() > .1f) {
 		rect.left += 100;
 		if (rect.left >= 2000)
 			rect.left = 0;
@@ -116,7 +116,7 @@ void Pokemon::loop() {
 void Pokemon::attaquer(Pokemon& cible, Competence competence)
 {
 	//À modifier
-	//cible.setPv(cible.getPv() - competence.getPuissance());
+	cible.setPv(cible.getPv() - 10);
 }
 
 void Pokemon::soin()

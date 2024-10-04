@@ -13,6 +13,7 @@ class Competence
 
 public:
 	Competence();
+	Competence(string nom);
 	Competence(string nom, int multiplicateur, string effet, string buff, string debuff);
 
 	string getNom();
