@@ -338,6 +338,28 @@ int checkPositionCompetence(sf::RenderWindow& window) {
 	return 4;
 }
 
+int checkPositionChoixPokemon(sf::RenderWindow& window, Joueur& joueur, int iPokemonActif) {
+	sf::Vector2i position = sf::Mouse::getPosition(window);
+
+	int l = 120 * SCALE_L;
+	int h = 48 * SCALE_H;
+
+	if ((position.x >= 349 && position.x < 349 + l && position.y > 247 && position.y < 247 + h) && joueur.getPokemon(0).getNom() != "Pokéball vide")//HAUT GAUCHE
+		return 0;
+	else if ((position.x >= 349 + l && position.x < 945 + 400 + l * 2 && position.y > 247 && position.y < 247 + h) && joueur.getPokemon(1).getNom() != "Pokéball vide") // HAUT DROITE
+		return 1;
+	else if ((position.x >= 349 && position.x < 475 + 400 + l && position.y > 247 + 158 && position.y < 247 + 158 + h) && joueur.getPokemon(2).getNom() != "Pokéball vide") // MILIEU GAUCHE
+		return 2;
+	else if ((position.x >= 349 + l && position.x < 945 + 400 + l * 2 && position.y > 247 + 158 && position.y < 247 + 158 + h) && joueur.getPokemon(3).getNom() != "Pokéball vide") // MILIEU DROITE
+		return 3;
+	else if ((position.x >= 349 && position.x < 475 + 400 + l && position.y > 247 + 158 * 2 - 1 && position.y < 247 + 158 * 2 - 1 + h) && joueur.getPokemon(4).getNom() != "Pokéball vide") // BAS GAUCHE
+		return 4;
+	else if ((position.x >= 349 + l && position.x < 945 + 400 + l * 2 && position.y > 247 + 158 * 2 - 1 && position.y < 247 + 158 * 2 - 1 + h) && joueur.getPokemon(5).getNom() != "Pokéball vide") // BAS DROITE
+		return 5;
+
+	return -1;
+}
+
 void animPokeball(float t, sf::RenderWindow& window) {
 	static int cptTop = 0;
 	sf::Vector2f vDebut(0, 400);
@@ -429,7 +451,7 @@ void gestionInventaire(int& action, int& positionClicInventaire, bool& combat, i
 	}
 }
 
-void gestionChoix(int& action, int& clicPositionInventaire, int& competence, bool& combat, bool& joueurLance, Joueur& joueur, int i, Pokemon& pokemonEnnemi, sf::RenderWindow& window) {
+void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActif, int& competence, bool& combat, bool& joueurLance, Joueur& joueur, int& iPokemonActif, Pokemon& pokemonEnnemi, sf::RenderWindow& window) {
 	static bool joueurJoue = true;
 
 	switch (action) {
@@ -441,9 +463,9 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& competence, boo
 		TEXTE.setString("A vous !");
 		if (joueurJoue) {
 			if (competence != 4) {
-				TEXTE.setString("Vous avez utilisé " + joueur.getPokemon(i).getCompetence(competence).getNom() + " !");
+				TEXTE.setString("Vous avez utilisé " + joueur.getPokemon(iPokemonActif).getCompetence(competence).getNom() + " !");
 				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-					joueur.getPokemon(i).attaquer(pokemonEnnemi, joueur.getPokemon(i).getCompetence(competence));
+					joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
 					joueurJoue = false;
 					HORLOGE_TOUR.restart();
 				}
@@ -455,16 +477,26 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& competence, boo
 			if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
 				competence = 4;
 				joueurJoue = true;
-				pokemonEnnemi.attaquer(joueur.getPokemon(i), pokemonEnnemi.getCompetence(rand() % 4));
+				pokemonEnnemi.attaquer(joueur.getPokemon(iPokemonActif), pokemonEnnemi.getCompetence(rand() % 4));
 				HORLOGE_TOUR.restart();
 				action = 0;
 			}
 		}
 		break;
 	case 2:
+		if (clicPokemonActif != -1) {
+			HUD.setTexture(TEXTURE_HUD_TEXTE);
+			TEXTE.setString("Venez " + joueur.getPokemon(clicPokemonActif).getNom() + " !");
+			if (HORLOGE_CHOIX.getElapsedTime().asSeconds() > 2.0) {
+				iPokemonActif = clicPokemonActif;
+				action = 0;
+				clicPokemonActif = -1;
+				HORLOGE_CHOIX.restart();
+			}
+		}
 		break;
 	case 3:
-		gestionInventaire(action, clicPositionInventaire, combat, i, joueur, pokemonEnnemi, window);
+		gestionInventaire(action, clicPositionInventaire, combat, iPokemonActif, joueur, pokemonEnnemi, window);
 		break;
 	case 4:
 		//Fuir
@@ -479,7 +511,7 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& competence, boo
 }
 
 void scalePv(Joueur& joueur, Pokemon& pokemonEnnemi) {
-	float longueurJoueur = 5.32 * joueur.getPokemon(0).getPv()/joueur.getPokemon(0).getPvMax() ;
+	float longueurJoueur = 5.32 * joueur.getPokemon(0).getPv() / joueur.getPokemon(0).getPvMax(); //Ici il faut changer, on ne prend pas en compte le pokémon actif
 	float longueurEnnemi = 5.32 * pokemonEnnemi.getPv()/pokemonEnnemi.getPvMax() ;
 	PV_POKEMON_ALLIE.setScale(longueurJoueur*SCALE_L, SCALE_H);
 	PV_POKEMON_ENNEMI.setScale(longueurEnnemi*SCALE_L, SCALE_H);
@@ -543,6 +575,7 @@ int main()
 
 	//Entier pour connaître le pokémon actif
 	int iPokemonActif = 0;
+	int clicPokemonActif = -1;
 
 	//Random pour connaître le pokémon ennemi
 	int randomEnnemi = 0;
@@ -590,6 +623,9 @@ int main()
 					else if (action == 3) {
 						clicPositionInventaire = checkPositionInventaire(window);
 					}
+					else if (action == 2) {
+						clicPokemonActif = checkPositionChoixPokemon(window, joueur, iPokemonActif);
+					}
 					else {
 						competence = checkPositionCompetence(window);
 					}
@@ -617,7 +653,7 @@ int main()
 			hud(action, joueur);
 
 			//Gestion du combat
-			gestionChoix(action, clicPositionInventaire, competence, combat, joueurLance,  joueur, iPokemonActif, tabPokemonEnnemi[randomEnnemi], window);
+			gestionChoix(action, clicPositionInventaire, clicPokemonActif, competence, combat, joueurLance,  joueur, iPokemonActif, tabPokemonEnnemi[randomEnnemi], window);
 
 			//Affichage du texte
 			TEXTE_NOM_ALLIE.setString(joueur.getPokemon(iPokemonActif).getNom());
@@ -642,9 +678,11 @@ int main()
 			window.draw(HUD);
 			if (action == 2) {
 				for (int i = 0; i < 6; i++){
-					window.draw(TEXTE_ETAT_POKEMON[i]);
-					window.draw(TEXTE_NOM_POKEMON[i]);
-					window.draw(PV_CHOIX_POKEMON[i]);
+					if (HUD.getTexture() == &TEXTURE_HUD_CHOIX_POKEMON) {
+						window.draw(TEXTE_ETAT_POKEMON[i]);
+						window.draw(TEXTE_NOM_POKEMON[i]);
+						window.draw(PV_CHOIX_POKEMON[i]);
+					}
 				}
 			}
 			window.draw(TEXTE);
