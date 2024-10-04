@@ -3,7 +3,7 @@
 
 Pokemon::Pokemon()
 {
-	nom = "";
+	nom = "Pokéball vide";
 	type = "";
 	pv = 0;
 	pvMax = 0;
@@ -96,6 +96,24 @@ int Pokemon::getEtat()
 void Pokemon::setEtat(int etat)
 {
 	this->etat = etat;
+}
+
+string Pokemon::getNomEtat()
+{
+	switch (etat) {
+	case 0:
+		return "Normal";
+		break;
+	case 1:
+		return "Empoisonne";
+		break;
+	case 2:
+		return "Brule";
+		break;
+	case 3:
+		return "Paralyse";
+		break;
+	}
 }
 
 int Pokemon::getPvMax()

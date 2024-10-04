@@ -90,7 +90,7 @@ string Joueur::pokeball(Pokemon pokemon, sf::Texture texture)
 	inventaire.utiliserPokeball();
 	if (random == 1) {
 		for (int i = 0; i < sizeof(tabPokemon)/sizeof(tabPokemon[0]) - 1; i++) {
-			if (tabPokemon[i].getNom() == "") {
+			if (tabPokemon[i].getNom() == "Pokéball vide") {
 				tabPokemon[i] = pokemon;
 				tabPokemon[i].getSprite().setTexture(texture);
 				return "Capture reussie";

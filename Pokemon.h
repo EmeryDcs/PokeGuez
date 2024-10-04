@@ -34,6 +34,7 @@ public:
 	Competence getCompetence(int i);
 	void setCompetence(int i, Competence competence);
 	int getEtat();
+	string getNomEtat();
 	void setEtat(int etat);
 	int getPvMax();
 	void loop();

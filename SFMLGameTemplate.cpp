@@ -40,10 +40,13 @@ sf::Sprite	HUD;
 sf::Sprite 	PV_POKEMON_ALLIE;
 sf::Sprite 	PV_POKEMON_ENNEMI;
 sf::Sprite 	POKEBALL;
+sf::Sprite	PV_CHOIX_POKEMON[6];
 sf::Font	FONT;
 sf::Text	TEXTE;
 sf::Text	TEXTE_NOM_ALLIE;
 sf::Text	TEXTE_NOM_ENNEMI;
+sf::Text	TEXTE_NOM_POKEMON[6];
+sf::Text 	TEXTE_ETAT_POKEMON[6];
 sf::Image	MASQUE;
 
 sf::Clock HORLOGE_CHOIX;
@@ -106,6 +109,21 @@ int initialisation() {
 	PV_POKEMON_ENNEMI.setTexture(TEXTURE_PV);
 	PV_POKEMON_ENNEMI.setScale(SCALE_L, SCALE_H);
 	PV_POKEMON_ENNEMI.setPosition(330, 79);
+	int cptY = 0;
+	for (int i = 0; i < 6; i++) {
+		PV_CHOIX_POKEMON[i].setTexture(TEXTURE_PV);
+		PV_CHOIX_POKEMON[i].setScale(SCALE_L, SCALE_H);
+		if (i % 2 == 0) {
+			PV_CHOIX_POKEMON[i].setPosition(586, 362 + cptY);
+		}
+		else {
+			PV_CHOIX_POKEMON[i].setPosition(1051, 362 + cptY);
+			if (i < 3)
+				cptY += 157;
+			else 
+				cptY += 158;
+		}
+	}
 
 	if (!TEXTURE_HUD_INVENTAIRE.loadFromFile("Ressource/images/combat/affichage_inventaire.png"))
 		return EXIT_FAILURE;
@@ -131,6 +149,27 @@ int initialisation() {
 	TEXTE_NOM_ENNEMI.setFillColor(sf::Color::Black);
 	TEXTE_NOM_ENNEMI.setPosition(200, 37);
 	TEXTE_NOM_ENNEMI.setString("");
+	cptY = 0;
+	for (int i = 0; i < 6; i++) {
+		TEXTE_NOM_POKEMON[i].setFont(FONT);
+		TEXTE_NOM_POKEMON[i].setCharacterSize(24);
+		TEXTE_NOM_POKEMON[i].setFillColor(sf::Color::Black);
+		TEXTE_NOM_POKEMON[i].setString("");
+		TEXTE_ETAT_POKEMON[i].setFont(FONT);
+		TEXTE_ETAT_POKEMON[i].setCharacterSize(24);
+		TEXTE_ETAT_POKEMON[i].setFillColor(sf::Color::Black);
+		TEXTE_ETAT_POKEMON[i].setString("");
+
+		if (i % 2 == 0) {
+			TEXTE_NOM_POKEMON[i].setPosition(475, 275+cptY);
+			TEXTE_ETAT_POKEMON[i].setPosition(485, 313 + cptY);
+		}
+		else {
+			TEXTE_NOM_POKEMON[i].setPosition(945, 275 + cptY);
+			TEXTE_ETAT_POKEMON[i].setPosition(955, 313 + cptY);
+			cptY += 158;
+		}
+	}
 
 	//Initialisation des horloges
 	HORLOGE_CHOIX.restart();
@@ -210,7 +249,7 @@ bool estSurCaseVerte(Joueur& joueur) {
 		return false;
 }
 
-void hud(int action) {
+void hud(int action, Joueur& joueur) {
 	switch (action) {
 	case 0:
 		HUD.setTexture(TEXTURE_HUD_CHOIX_ACTION);
@@ -220,6 +259,10 @@ void hud(int action) {
 		break;
 	case 2:
 		HUD.setTexture(TEXTURE_HUD_CHOIX_POKEMON);
+		for (int i = 0; i < 6; i++) {
+			TEXTE_NOM_POKEMON[i].setString(joueur.getPokemon(i).getNom());
+			TEXTE_ETAT_POKEMON[i].setString(joueur.getPokemon(i).getNomEtat());
+		}
 		break;
 	case 3:
 		HUD.setTexture(TEXTURE_HUD_INVENTAIRE);
@@ -236,18 +279,6 @@ void hud(int action) {
 	case 6:
 		HUD.setTexture(TEXTURE_HUD_TEXTE);
 		TEXTE.setString("Vous avez lancé une Pokéball !");
-		break;
-	}
-}
-
-void texte(int action) {
-	switch (action) {
-	case 0:
-		TEXTE.setString("Un Pokémon sauvage apparaît !\n Que voulez-vous faire ?");
-		break;
-	case 1:
-		break;
-	case 2:
 		break;
 	}
 }
@@ -403,6 +434,7 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& competence, boo
 
 	switch (action) {
 	case 0:
+		TEXTE.setString("Un Pokémon sauvage apparaît !\n Que voulez-vous faire ?");
 		break;
 	case 1:
 		//Choix de la compétence
@@ -451,6 +483,12 @@ void scalePv(Joueur& joueur, Pokemon& pokemonEnnemi) {
 	float longueurEnnemi = 5.32 * pokemonEnnemi.getPv()/pokemonEnnemi.getPvMax() ;
 	PV_POKEMON_ALLIE.setScale(longueurJoueur*SCALE_L, SCALE_H);
 	PV_POKEMON_ENNEMI.setScale(longueurEnnemi*SCALE_L, SCALE_H);
+} 
+// À CHANGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+void scalePvChoixPokemon(Pokemon& pokemon, int i) {
+	float longueur = 5.32 * pokemon.getPv() / pokemon.getPvMax();
+	PV_CHOIX_POKEMON[i].setScale(longueur * SCALE_L, SCALE_H);
 }
 
 int main()
@@ -576,18 +614,20 @@ int main()
 			window.draw(tabPokemonEnnemi[randomEnnemi].getSprite());
 
 			//Affichage de l'HUD.
-			hud(action);
+			hud(action, joueur);
 
 			//Gestion du combat
 			gestionChoix(action, clicPositionInventaire, competence, combat, joueurLance,  joueur, iPokemonActif, tabPokemonEnnemi[randomEnnemi], window);
 
 			//Affichage du texte
-			texte(action);
 			TEXTE_NOM_ALLIE.setString(joueur.getPokemon(iPokemonActif).getNom());
 			TEXTE_NOM_ENNEMI.setString(tabPokemonEnnemi[randomEnnemi].getNom());
 
 			//Affichage des PV
 			scalePv(joueur, tabPokemonEnnemi[randomEnnemi]);
+			for (int i = 0; i < 6; i++) {
+				scalePvChoixPokemon(joueur.getPokemon(i), i);
+			}
 
 			//Gestion de la View
 			gameView.setSize(window.getSize().x, window.getSize().y);
@@ -595,11 +635,18 @@ int main()
 			window.setView(gameView);
 
 			//On affiche tout ce qui évolue dans le combat
-			window.draw(HUD);
 			window.draw(PV_POKEMON_ALLIE);
 			window.draw(PV_POKEMON_ENNEMI);
 			window.draw(TEXTE_NOM_ALLIE);
 			window.draw(TEXTE_NOM_ENNEMI);
+			window.draw(HUD);
+			if (action == 2) {
+				for (int i = 0; i < 6; i++){
+					window.draw(TEXTE_ETAT_POKEMON[i]);
+					window.draw(TEXTE_NOM_POKEMON[i]);
+					window.draw(PV_CHOIX_POKEMON[i]);
+				}
+			}
 			window.draw(TEXTE);
 
 			window.display();
