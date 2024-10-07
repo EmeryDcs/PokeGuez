@@ -182,21 +182,62 @@ int initialisation() {
 
 void creation(Joueur& joueur, Pokemon tabPokemonEnnemi[]) {
 	//Création des Pokemons
-	Competence competencesAerodactyl[4] = { Competence("1"), Competence("2"), Competence("3"), Competence("4") };
-	Competence competencesDimoret[4] = { Competence("1"), Competence("2"), Competence("3"), Competence("4") };
-	Competence competencesDemolos[4] = { Competence("1"), Competence("2"), Competence("3"), Competence("4") };
-	Competence competencesTropius[4] = { Competence("1"), Competence("2"), Competence("3"), Competence("4") };
-	Competence competencesRayquaza[4] = { Competence("1"), Competence("2"), Competence("3"), Competence("4") };
-	Competence competencesArceus[4] = { Competence("1"), Competence("2"), Competence("3"), Competence("4") };
-	Competence competencesHeydaim[4] = { Competence("1"), Competence("2"), Competence("3"), Competence("4") };
-	Competence competencesZekrom[4] = { Competence("1"), Competence("2"), Competence("3"), Competence("4") };
+	// Competence(string nom, int multiplicateur, string effet, string buff, string debuff)
+	Competence competencesAerodactyl[4] = { 
+		Competence("Morsure", 60, "Aucun", "Aucun", "Peur"), 
+		Competence("Pouvoir Antique", 60, "Aucun", "Buff tout", "Aucun"),
+		Competence("Cru-Ailes", 60, "Aucun", "Aucun", "Aucun"),
+		Competence("Grimace", 0, "Aucun", "Aucun", "Vitesse Debuff")
+	};
+	Competence competencesDimoret[4] = { 
+		Competence("Assurance", 60, "Dgts doubles", "Aucun", "Aucun"),
+		Competence("Groz'Yeux", 0, "Aucun", "Aucun", "Baisse Def"),
+		Competence("Griffe", 40, "Aucun", "Aucun", "Aucun"),
+		Competence("Hâte", 0, "Aucun", "Vitesse max", "Aucun")
+	};
+	Competence competencesDemolos[4] = { 
+		Competence("Flammèche", 40, "Aucun", "Aucun", "Brulure"),
+		Competence("Crocs Feu", 65, "Aucun", "Aucun", "Brulure"),
+		Competence("Morsure", 60, "Aucun", "Aucun", "Peur"),
+		Competence("Griffe", 40, "Aucun", "Aucun", "Aucun")
+	};
+	Competence competencesTropius[4] = { 
+		Competence("Croissance", 0, "Aucun", "Augmentation Attaque", "Aucun"),
+		Competence("Tranch'Herbe", 55, "Aucun", "Aucun", "Aucun"),
+		Competence("Feuille Magik", 60, "Aucun", "Aucun", "Aucun"),
+		Competence("Écrasement", 65, "Aucun", "Aucun", "Peur")
+	};
+	Competence competencesRayquaza[4] = {
+		Competence("Ouragan", 40, "Aucun", "Aucun", "Peur"),
+		Competence("Danse Draco", 0, "Aucun", "Augmentation Dgts et Vitesse", "Aucun"),
+		Competence("Draco-Ascension", 120, "Aucun", "Aucun", "Defense Debuff"),
+		Competence("Lame d'Air", 75, "Aucun", "Aucun", "Peur")
+	};
+	Competence competencesArceus[4] = { 
+		Competence("Vitesse Extrême", 80, "Prioritaire", "Aucun", "Aucun"),
+		Competence("Ultralaser", 150, "Repos", "Aucun", "Aucun"),
+		Competence("Jugement", 100, "Aucun", "Aucun", "Aucun"),
+		Competence("Requiem", 100, "Aucun", "Aucun", "Mort dans trois")
+	};
+	Competence competencesHeydaim[4] = {
+		Competence("Balle Graine", 25, "2 à 5", "Aucun", "Aucun"),
+		Competence("Éco-Sphère", 90, "Aucun", "Aucun", "Aucun"),
+		Competence("Lance-Soleil", 120, "Aucun", "Aucun", "Aucun"),
+		Competence("Bélier", 90, "Aucun", "Se blesse", "Aucun")
+	};
+	Competence competencesZekrom[4] = { 
+		Competence("Crocs Éclair", 65, "Aucun", "Aucun", "Paralysie"),
+		Competence("Tonerre", 90, "Aucun", "Aucun", "Paralysie"),
+		Competence("Fatal-Foudre", 110, "Aucun", "Aucun", "Paralysie"),
+		Competence("Charge Foudre", 130, "Aucun", "Aucun", "Paralysie")
+	};
 
 	Pokemon starter = Pokemon("Aerodactyl", "Vol", 120, 10, 10, competencesAerodactyl, 0, POKEMONS, sf::IntRect(0, 0, 100, 100));
 	starter.getSprite().setPosition(225, 250);
 	starter.getSprite().setScale(4,4);
 
-	tabPokemonEnnemi[0] = Pokemon("Aerodactyl", "Vol", 120, 10, 10, competencesAerodactyl, 0, POKEMONS_ENNEMIS, sf::IntRect(0, 0, 100, 100));
-	tabPokemonEnnemi[1] = Pokemon("Dimoret", "Normal", 120, 10, 10, competencesDimoret, 0, POKEMONS_ENNEMIS, sf::IntRect(0, 100, 100, 100));
+	tabPokemonEnnemi[0] = Pokemon("Ptéra", "Vol", 80, 10, 10, competencesAerodactyl, 0, POKEMONS_ENNEMIS, sf::IntRect(0, 0, 100, 100));
+	tabPokemonEnnemi[1] = Pokemon("Dimoret", "Glace", 120, 10, 10, competencesDimoret, 0, POKEMONS_ENNEMIS, sf::IntRect(0, 100, 100, 100));
 	tabPokemonEnnemi[2] = Pokemon("Demolos", "Normal", 120, 10, 10, competencesDemolos, 0, POKEMONS_ENNEMIS, sf::IntRect(0, 200, 100, 100));
 	tabPokemonEnnemi[3] = Pokemon("Tropius", "Normal", 120, 10, 10, competencesTropius, 0, POKEMONS_ENNEMIS, sf::IntRect(0, 300, 100, 100));
 	tabPokemonEnnemi[4] = Pokemon("Rayquaza", "Normal", 120, 10, 10, competencesRayquaza, 0, POKEMONS_ENNEMIS, sf::IntRect(0, 400, 100, 100));
@@ -431,6 +472,7 @@ void gestionInventaire(int& action, int& positionClicInventaire, bool& combat, i
 				combat = false;
 			pokemonEnnemi.getSprite().setColor(sf::Color(255, 255, 255, 255));
 			HORLOGE_BUISSON.restart();
+			joueurLance = false;
 		}
 		break;
 	case 3:
@@ -471,7 +513,7 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActi
 				}
 			}
 		}
-		else {
+		else if (pokemonEnnemi.getPv() > 0) {
 			HUD.setTexture(TEXTURE_HUD_TEXTE);
 			TEXTE.setString("Le Pokémon ennemi attaque !");
 			if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
@@ -482,11 +524,20 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActi
 				action = 0;
 			}
 		}
+		else if (pokemonEnnemi.getPv() <= 0) {
+			HUD.setTexture(TEXTURE_HUD_TEXTE);
+			TEXTE.setString("Vous avez vaincu le Pokémon ennemi !");
+			if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+				HORLOGE_TOUR.restart();
+				action = 0;
+				combat = false;
+			}
+		}
 		break;
 	case 2:
 		if (clicPokemonActif != -1) {
 			HUD.setTexture(TEXTURE_HUD_TEXTE);
-			TEXTE.setString("Venez " + joueur.getPokemon(clicPokemonActif).getNom() + " !");
+			TEXTE.setString("Viens " + joueur.getPokemon(clicPokemonActif).getNom() + " !");
 			if (HORLOGE_CHOIX.getElapsedTime().asSeconds() > 2.0) {
 				iPokemonActif = clicPokemonActif;
 				action = 0;
@@ -497,6 +548,7 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActi
 		break;
 	case 3:
 		gestionInventaire(action, clicPositionInventaire, combat, iPokemonActif, joueur, pokemonEnnemi, window);
+		HORLOGE_TOUR.restart();
 		break;
 	case 4:
 		//Fuir
@@ -510,17 +562,45 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActi
 	}
 }
 
-void scalePv(Joueur& joueur, Pokemon& pokemonEnnemi) {
-	float longueurJoueur = 5.32 * joueur.getPokemon(0).getPv() / joueur.getPokemon(0).getPvMax(); //Ici il faut changer, on ne prend pas en compte le pokémon actif
-	float longueurEnnemi = 5.32 * pokemonEnnemi.getPv()/pokemonEnnemi.getPvMax() ;
+void scalePv(Joueur& joueur, Pokemon& pokemonEnnemi, int iPokemonActif) {
+	float longueurJoueur = 5.32 * joueur.getPokemon(iPokemonActif).getPv() / joueur.getPokemon(iPokemonActif).getPvMax();
+	float longueurEnnemi = 5.32 * pokemonEnnemi.getPv() / pokemonEnnemi.getPvMax();
+	if (joueur.getPokemon(iPokemonActif).getPv() <= 0) {
+		longueurJoueur = 0;
+	}
+	if (pokemonEnnemi.getPv() <= 0) {
+		longueurEnnemi = 0;
+	}
 	PV_POKEMON_ALLIE.setScale(longueurJoueur*SCALE_L, SCALE_H);
 	PV_POKEMON_ENNEMI.setScale(longueurEnnemi*SCALE_L, SCALE_H);
 } 
-// À CHANGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 void scalePvChoixPokemon(Pokemon& pokemon, int i) {
 	float longueur = 5.32 * pokemon.getPv() / pokemon.getPvMax();
 	PV_CHOIX_POKEMON[i].setScale(longueur * SCALE_L, SCALE_H);
+}
+
+bool changementPokemonMort(int& iPokemonActif, Joueur& joueur, int& action, bool& combat) {
+	if (joueur.getPokemon(iPokemonActif).getPv() <= 0) {
+		for (int i = 0; i < 6; i++) {
+			if (joueur.getPokemon(i).getPv() > 0) {
+				iPokemonActif = i;
+				break;
+			}
+			else {
+				if (i == 5) {
+					TEXTE.setString("Vous avez perdu !");
+					if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+						HORLOGE_TOUR.restart();
+						action = 0;
+						combat = false;
+					}
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 int main()
@@ -649,18 +729,24 @@ int main()
 			window.draw(joueur.getPokemon(iPokemonActif).getSprite());
 			window.draw(tabPokemonEnnemi[randomEnnemi].getSprite());
 
-			//Affichage de l'HUD.
-			hud(action, joueur);
+			//On check les PV du pokémon actif et on change si il est mort
 
-			//Gestion du combat
-			gestionChoix(action, clicPositionInventaire, clicPokemonActif, competence, combat, joueurLance,  joueur, iPokemonActif, tabPokemonEnnemi[randomEnnemi], window);
+			if (!changementPokemonMort(iPokemonActif, joueur, action, combat)) {
+
+				//Affichage de l'HUD.
+				hud(action, joueur);
+
+				//Gestion du combat
+				gestionChoix(action, clicPositionInventaire, clicPokemonActif, competence, combat, joueurLance, joueur, iPokemonActif, tabPokemonEnnemi[randomEnnemi], window);
+
+			}
 
 			//Affichage du texte
 			TEXTE_NOM_ALLIE.setString(joueur.getPokemon(iPokemonActif).getNom());
 			TEXTE_NOM_ENNEMI.setString(tabPokemonEnnemi[randomEnnemi].getNom());
 
 			//Affichage des PV
-			scalePv(joueur, tabPokemonEnnemi[randomEnnemi]);
+			scalePv(joueur, tabPokemonEnnemi[randomEnnemi], iPokemonActif);
 			for (int i = 0; i < 6; i++) {
 				scalePvChoixPokemon(joueur.getPokemon(i), i);
 			}
@@ -677,7 +763,7 @@ int main()
 			window.draw(TEXTE_NOM_ENNEMI);
 			window.draw(HUD);
 			if (action == 2) {
-				for (int i = 0; i < 6; i++){
+				for (int i = 0; i < 6; i++) {
 					if (HUD.getTexture() == &TEXTURE_HUD_CHOIX_POKEMON) {
 						window.draw(TEXTE_ETAT_POKEMON[i]);
 						window.draw(TEXTE_NOM_POKEMON[i]);
@@ -688,6 +774,7 @@ int main()
 			window.draw(TEXTE);
 
 			window.display();
+
 		}
 		else {
 			//---------Code et affichage pour l'exploration--------

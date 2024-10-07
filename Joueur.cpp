@@ -86,9 +86,10 @@ void Joueur::soin(int i)
 
 string Joueur::pokeball(Pokemon pokemon, sf::Texture texture)
 {
-	int random = rand() % 2;
+	float coeff = (1.f - (pokemon.getPv() * 1.0) / (pokemon.getPvMax() * 1.0)) + (1 - 1/(pokemon.getEtat()+1)) ;
+	cout << "coeff : " << coeff << endl;
 	inventaire.utiliserPokeball();
-	if (random == 1) {
+	if (coeff >= 0.75) {
 		for (int i = 0; i < sizeof(tabPokemon)/sizeof(tabPokemon[0]) - 1; i++) {
 			if (tabPokemon[i].getNom() == "Pokéball vide") {
 				tabPokemon[i] = pokemon;

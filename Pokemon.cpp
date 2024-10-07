@@ -105,13 +105,13 @@ string Pokemon::getNomEtat()
 		return "Normal";
 		break;
 	case 1:
-		return "Empoisonne";
+		return "Paralyse";
 		break;
 	case 2:
 		return "Brule";
 		break;
 	case 3:
-		return "Paralyse";
+		return "Empoisonne"; 
 		break;
 	}
 }
@@ -134,7 +134,7 @@ void Pokemon::loop() {
 void Pokemon::attaquer(Pokemon& cible, Competence competence)
 {
 	//À modifier
-	cible.setPv(cible.getPv() - 10);
+	cible.setPv(cible.getPv() - 100);
 }
 
 void Pokemon::soin()
