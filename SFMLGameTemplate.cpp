@@ -34,7 +34,11 @@ sf::Texture TEXTURE_PV;
 sf::Texture TEXTURE_POKEBALL;
 sf::Texture TEXTURE_HUD_INVENTAIRE;
 sf::Texture TEXTURE_HUD_CHOIX_POKEMON;
+sf::Texture TEXTURE_MENU;
+sf::Texture TEXTURE_FIN;
 sf::Sprite	MAP;
+sf::Sprite  MENU;
+sf::Sprite  FIN;
 sf::Sprite	FOND_COMBAT;
 sf::Sprite	HUD;
 sf::Sprite 	PV_POKEMON_ALLIE;
@@ -47,11 +51,13 @@ sf::Text	TEXTE_NOM_ALLIE;
 sf::Text	TEXTE_NOM_ENNEMI;
 sf::Text	TEXTE_NOM_POKEMON[6];
 sf::Text 	TEXTE_ETAT_POKEMON[6];
+sf::Text	TEXTE_COMPETENCE[4];
 sf::Image	MASQUE;
 sf::RectangleShape RECTANGLE_ANIMATION_COMBAT;
 
 sf::Music MUSIQUE_COMBAT;
 sf::Music MUSIQUE_MAP;
+sf::Music SON_SOIN;
 
 sf::Clock HORLOGE_CHOIX;
 sf::Clock HORLOGE_BUISSON;
@@ -135,6 +141,16 @@ int initialisation() {
 
 	if (!TEXTURE_HUD_CHOIX_POKEMON.loadFromFile("Ressource/images/combat/choix_pokemon.png"))
 		return EXIT_FAILURE;
+
+	if (!TEXTURE_MENU.loadFromFile("Ressource/images/menu.png"))
+		return EXIT_FAILURE;
+	MENU.setTexture(TEXTURE_MENU);
+	MENU.setPosition(0, 0);
+
+	if (!TEXTURE_FIN.loadFromFile("Ressource/images/fin.png"))
+		return EXIT_FAILURE;
+	FIN.setTexture(TEXTURE_FIN);
+	FIN.setPosition(0, 0);
 	
 	//Initialisation du texte
 	if (!FONT.loadFromFile("Ressource/font/pokemon.ttf"))
@@ -142,7 +158,7 @@ int initialisation() {
 	TEXTE.setFont(FONT);
 	TEXTE.setCharacterSize(24);
 	TEXTE.setFillColor(sf::Color::White);
-	TEXTE.setPosition(75, 600);
+	TEXTE.setPosition(50, 590);
 	TEXTE.setString("");
 	TEXTE_NOM_ALLIE.setFont(FONT);
 	TEXTE_NOM_ALLIE.setCharacterSize(24);
@@ -175,6 +191,13 @@ int initialisation() {
 			cptY += 158;
 		}
 	}
+	for (int i = 0; i < 4; i++) {
+		TEXTE_COMPETENCE[i].setFont(FONT);
+		TEXTE_COMPETENCE[i].setCharacterSize(24);
+		TEXTE_COMPETENCE[i].setFillColor(sf::Color::Black);
+		TEXTE_COMPETENCE[i].setPosition(POSX_BOUTON_COMPETENCE1 + 5 + 300 * i, POSY_BOUTON_COMPETENCE + 75);
+		TEXTE_COMPETENCE[i].setString("");
+	}
 
 	//Initialisation de la shape de l'animation de combat
 	RECTANGLE_ANIMATION_COMBAT.setSize(sf::Vector2f(80,80));
@@ -191,7 +214,11 @@ int initialisation() {
 	//Initialisation des musique
 	if (!MUSIQUE_COMBAT.openFromFile("Ressource/musique/combat.mp3"))
 		return EXIT_FAILURE;
+	MUSIQUE_COMBAT.setVolume(50);
 	if (!MUSIQUE_MAP.openFromFile("Ressource/musique/map.mp3"))
+		return EXIT_FAILURE;
+	MUSIQUE_COMBAT.setVolume(50);
+	if (!SON_SOIN.openFromFile("Ressource/musique/soin.mp3"))
 		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;
@@ -201,7 +228,7 @@ void creation(Joueur& joueur, Pokemon tabPokemonEnnemi[]) {
 	//Création des Pokemons
 	Competence competencesAerodactyl[4] = { 
 		Competence("Morsure",			60,		"Aucun",		"Aucun",						"Peur"), 
-		Competence("Pouvoir Antique",	60,		"Aucun",		"Buff tout",					"Aucun"),
+		Competence("Pouvoir \nAntique",	60,		"Aucun",		"Buff tout",					"Aucun"),
 		Competence("Cru-Ailes",			60,		"Aucun",		"Aucun",						"Aucun"),
 		Competence("Grimace",			0,		"Aucun",		"Aucun",						"Baisse Vitesse")
 	};
@@ -220,32 +247,32 @@ void creation(Joueur& joueur, Pokemon tabPokemonEnnemi[]) {
 	Competence competencesTropius[4] = { 
 		Competence("Croissance",		0,		"Aucun",		"Augmentation Attaque",			"Aucun"),
 		Competence("Tranch'Herbe",		55,		"Aucun",		"Aucun",						"Aucun"),
-		Competence("Feuille Magik",		60,		"Aucun",		"Aucun",						"Aucun"),
+		Competence("Feuille \nMagik",		60,		"Aucun",		"Aucun",						"Aucun"),
 		Competence("Écrasement",		65,		"Aucun",		"Aucun",						"Peur")
 	};
 	Competence competencesRayquaza[4] = {
 		Competence("Ouragan",			40,		"Aucun",		"Aucun",						"Peur"),
 		Competence("Danse Draco",		0,		"Aucun",		"Buff tout",					"Aucun"),
-		Competence("Draco-Ascension",	120,	"Aucun",		"Aucun",						"Baisse Attaque"),
+		Competence("Draco-\nAscension",	120,	"Aucun",		"Aucun",						"Baisse Attaque"),
 		Competence("Lame d'Air",		75,		"Aucun",		"Aucun",						"Peur")
 	};
 	Competence competencesArceus[4] = { 
-		Competence("Vitesse Extrême",	80,		"Prioritaire",	"Aucun",						"Aucun"),
+		Competence("Vitesse \nExtrême",	80,		"Prioritaire",	"Aucun",						"Aucun"),
 		Competence("Ultralaser",		150,	"Repos",		"Aucun",						"Aucun"),
 		Competence("Jugement",			100,	"Aucun",		"Aucun",						"Aucun"),
 		Competence("Requiem",			100,	"Aucun",		"Aucun",						"Mort dans trois")
 	};
 	Competence competencesHeydaim[4] = {
-		Competence("Balle Graine",		25,		"2 à 5",		"Aucun",						"Aucun"),
+		Competence("Balle \nGraine",		25,		"2 à 5",		"Aucun",						"Aucun"),
 		Competence("Éco-Sphère",		90,		"Aucun",		"Aucun",						"Aucun"),
 		Competence("Lance-Soleil",		120,	"Aucun",		"Aucun",						"Aucun"),
 		Competence("Bélier",			90,		"Aucun",		"Se blesse",					"Aucun")
 	};
 	Competence competencesZekrom[4] = { 
-		Competence("Crocs Éclair",		65,		"Aucun",		"Aucun",						"Paralysie"),
+		Competence("Crocs \nÉclair",		65,		"Aucun",		"Aucun",						"Paralysie"),
 		Competence("Tonerre",			90,		"Aucun",		"Aucun",						"Paralysie"),
 		Competence("Fatal-Foudre",		110,	"Aucun",		"Aucun",						"Paralysie"),
-		Competence("Charge Foudre",		130,	"Aucun",		"Aucun",						"Paralysie")
+		Competence("Charge \nFoudre",		130,	"Aucun",		"Aucun",						"Paralysie")
 	};
 
 	Pokemon starter = Pokemon("Aerodactyl", "Vol", 80, 80, 130, competencesAerodactyl, 0, POKEMONS, sf::IntRect(0, 0, 100, 100));
@@ -299,11 +326,11 @@ bool estSurCaseVerte(Joueur& joueur) {
 
 	if (HORLOGE_BUISSON.getElapsedTime().asSeconds() > 1) {
 		HORLOGE_BUISSON.restart();
-		if (couleurPixelMasque == 598040063 && random >= 50)
+		if (couleurPixelMasque == 598040063 && random >= 50) {
 			return true;
+		} 
 	} 
-	else
-		return false;
+	return false;
 }
 
 void hud(int action, Joueur& joueur) {
@@ -313,6 +340,9 @@ void hud(int action, Joueur& joueur) {
 		break;
 	case 1:
 		HUD.setTexture(TEXTURE_HUD_CHOIX_COMPETENCE);
+		for (int i = 0; i < 4; i++) {
+			TEXTE_COMPETENCE[i].setString(joueur.getPokemon(0).getCompetence(i).getNom());
+		}
 		break;
 	case 2:
 		HUD.setTexture(TEXTURE_HUD_CHOIX_POKEMON);
@@ -383,6 +413,7 @@ int checkPositionInventaire(sf::RenderWindow& window) {
 int checkPositionCompetence(sf::RenderWindow& window) {
 	sf::Vector2i position = sf::Mouse::getPosition(window);
 
+	HORLOGE_TOUR.getElapsedTime().asSeconds();
 	if (position.x >= POSX_BOUTON_COMPETENCE1 && position.x < POSX_BOUTON_COMPETENCE2 && position.y > POSY_BOUTON_COMPETENCE)
 		return 0;
 	else if (position.x >= POSX_BOUTON_COMPETENCE2 && position.x < POSX_BOUTON_COMPETENCE3 && position.y > POSY_BOUTON_COMPETENCE)
@@ -513,104 +544,109 @@ void gestionInventaire(int& action, int& positionClicInventaire, bool& combat, i
 void gestionAttaque(int& action, int& competence, bool& combat, Joueur& joueur, int& iPokemonActif, Pokemon& pokemonEnnemi, sf::RenderWindow& window) {
 	static bool joueurJoue = true;
 	static bool pokemonJoue = true;
-	static bool seRepose = true;
+	static bool seRepose = false;
+	int competenceRandomEnnemi = 0;
 
-	string competenceJoueur = joueur.getPokemon(iPokemonActif).getCompetence(competence).getEffet();
-	
-	//Condition si jamais le joueur a utilisé une technique obligeant le repos
-	if (seRepose) {
-		HUD.setTexture(TEXTURE_HUD_TEXTE);
-		TEXTE.setString("Votre Pokémon se repose !"); 
-		if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-			TEXTE.setString("Le Pokémon ennemi attaque !");
-			if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 4.0) {
-				competence = 4;
-				joueurJoue = true;
-				pokemonEnnemi.attaquer(joueur.getPokemon(iPokemonActif), pokemonEnnemi.getCompetence(rand() % 4));
-				HORLOGE_TOUR.restart();
-				action = 0;
-				seRepose = false;
-			}
-		}
-	}
-	//Condition si le joueur est plus rapide
-	else if (joueur.getPokemon(iPokemonActif).getVitesse() >= pokemonEnnemi.getVitesse() || competenceJoueur == "Prioritaire") {
-		if (joueurJoue) {
-			if (competence != 4) {
-				TEXTE.setString("Vous avez utilisé " + joueur.getPokemon(iPokemonActif).getCompetence(competence).getNom() + " !");
-				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-					if (competenceJoueur == "Dgts double") {
-						joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
-					}
-					else if (competenceJoueur == "2 à 5") {
-						int random = rand() % 4;
-						for (int i = 0; i < random; i++) {
-							joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
-						}
-					}
-					joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
-					joueurJoue = false;
-					HORLOGE_TOUR.restart();
-				}
-			}
-		}
-		else if (pokemonEnnemi.getPv() > 0) {
+	if (competence != 4) {
+		string competenceJoueur = joueur.getPokemon(iPokemonActif).getCompetence(competence).getEffet();
+
+		//Condition si jamais le joueur a utilisé une technique obligeant le repos
+		if (seRepose) {
 			HUD.setTexture(TEXTURE_HUD_TEXTE);
-			TEXTE.setString("Le Pokémon ennemi attaque !");
+			TEXTE.setString("Votre Pokémon se repose !");
 			if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-				competence = 4;
-				joueurJoue = true;
-				pokemonEnnemi.attaquer(joueur.getPokemon(iPokemonActif), pokemonEnnemi.getCompetence(rand() % 4));
-				HORLOGE_TOUR.restart();
-				action = 0;
-				if (competenceJoueur == "Repos")
-					seRepose = true;
-			}
-		}
-		else if (pokemonEnnemi.getPv() <= 0) {
-			HUD.setTexture(TEXTURE_HUD_TEXTE);
-			TEXTE.setString("Vous avez vaincu le Pokémon ennemi !");
-			if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-				joueurJoue = true;
-				HORLOGE_TOUR.restart();
-				action = 0;
-				combat = false;
-			}
-		}
-	}
-	//Condition si l'ennemi est plus rapide
-	else { //if (joueur.getPokemon(iPokemonActif).getVitesse() >= pokemonEnnemi.getVitesse())
-		if (competence != 4) {
-			if (pokemonJoue) {
-				HUD.setTexture(TEXTURE_HUD_TEXTE);
 				TEXTE.setString("Le Pokémon ennemi attaque !");
-				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-					pokemonJoue = false;
+				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 4.0) {
+					competence = 4;
+					joueurJoue = true;
 					pokemonEnnemi.attaquer(joueur.getPokemon(iPokemonActif), pokemonEnnemi.getCompetence(rand() % 4));
 					HORLOGE_TOUR.restart();
+					action = 0;
+					seRepose = false;
 				}
 			}
-			else if (joueur.getPokemon(iPokemonActif).getPv() > 0) {
+		}
+		//Condition si le joueur est plus rapide
+		else if (joueur.getPokemon(iPokemonActif).getVitesse() >= pokemonEnnemi.getVitesse() || competenceJoueur == "Prioritaire") {
+			if (joueurJoue) {
 				if (competence != 4) {
 					HUD.setTexture(TEXTURE_HUD_TEXTE);
 					TEXTE.setString("Vous avez utilisé " + joueur.getPokemon(iPokemonActif).getCompetence(competence).getNom() + " !");
 					if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+						if (competenceJoueur == "Dgts double") {
+							joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
+						}
+						else if (competenceJoueur == "2 à 5") {
+							int random = rand() % 4;
+							for (int i = 0; i < random; i++) {
+								joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
+							}
+						}
 						joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
-						pokemonJoue = true;
+						joueurJoue = false;
 						HORLOGE_TOUR.restart();
-						competence = 4;
-						action = 0;
-						if (competenceJoueur == "Repos")
-							seRepose = true;
+						competenceRandomEnnemi = rand() % 4;
 					}
 				}
 			}
-			else if (joueur.getPokemon(iPokemonActif).getPv() <= 0) {
-				TEXTE.setString("Changement de Pokemon !");
+			else if (pokemonEnnemi.getPv() > 0) {
+				HUD.setTexture(TEXTURE_HUD_TEXTE);
+				TEXTE.setString("Le Pokémon ennemi attaque  et utilise "+ pokemonEnnemi.getCompetence(competenceRandomEnnemi).getNom() + "!");
 				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-					pokemonJoue = true;
+					competence = 4;
+					joueurJoue = true;
+					pokemonEnnemi.attaquer(joueur.getPokemon(iPokemonActif), pokemonEnnemi.getCompetence(competenceRandomEnnemi));
 					HORLOGE_TOUR.restart();
 					action = 0;
+					if (competenceJoueur == "Repos")
+						seRepose = true;
+				}
+			}
+			else if (pokemonEnnemi.getPv() <= 0) {
+				HUD.setTexture(TEXTURE_HUD_TEXTE);
+				TEXTE.setString("Vous avez vaincu le Pokémon ennemi !");
+				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+					joueurJoue = true;
+					HORLOGE_TOUR.restart();
+					action = 0;
+					combat = false;
+				}
+			}
+		}
+		//Condition si l'ennemi est plus rapide
+		else { //if (joueur.getPokemon(iPokemonActif).getVitesse() >= pokemonEnnemi.getVitesse())
+			if (competence != 4) {
+				if (pokemonJoue) {
+					HUD.setTexture(TEXTURE_HUD_TEXTE);
+					TEXTE.setString("Le Pokémon ennemi attaque !");
+					if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+						pokemonJoue = false;
+						pokemonEnnemi.attaquer(joueur.getPokemon(iPokemonActif), pokemonEnnemi.getCompetence(rand() % 4));
+						HORLOGE_TOUR.restart();
+					}
+				}
+				else if (joueur.getPokemon(iPokemonActif).getPv() > 0) {
+					if (competence != 4) {
+						HUD.setTexture(TEXTURE_HUD_TEXTE);
+						TEXTE.setString("Vous avez utilisé " + joueur.getPokemon(iPokemonActif).getCompetence(competence).getNom() + " !");
+						if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+							joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
+							pokemonJoue = true;
+							HORLOGE_TOUR.restart();
+							competence = 4;
+							action = 0;
+							if (competenceJoueur == "Repos")
+								seRepose = true;
+						}
+					}
+				}
+				else if (joueur.getPokemon(iPokemonActif).getPv() <= 0) {
+					TEXTE.setString("Changement de Pokemon !");
+					if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+						pokemonJoue = true;
+						HORLOGE_TOUR.restart();
+						action = 0;
+					}
 				}
 			}
 		}
@@ -621,7 +657,7 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActi
 
 	switch (action) {
 	case 0:
-		TEXTE.setString("Un Pokémon sauvage apparaît !\n Que voulez-vous faire ?");
+		TEXTE.setString("Un Pokémon sauvage apparaît !\nQue voulez-vous faire ?");
 		break;
 	case 1:
 		//Choix de la compétence
@@ -629,6 +665,7 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActi
 		gestionAttaque(action, competence, combat, joueur, iPokemonActif, pokemonEnnemi, window);
 		break;
 	case 2:
+		//Changement de Pokémon
 		if (clicPokemonActif != -1) {
 			HUD.setTexture(TEXTURE_HUD_TEXTE);
 			TEXTE.setString("Viens " + joueur.getPokemon(clicPokemonActif).getNom() + " !");
@@ -641,6 +678,7 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActi
 		}
 		break;
 	case 3:
+		//Inventaire
 		gestionInventaire(action, clicPositionInventaire, combat, iPokemonActif, joueur, pokemonEnnemi, window);
 		HORLOGE_TOUR.restart();
 		break;
@@ -682,15 +720,13 @@ bool changementPokemonMort(int& iPokemonActif, Joueur& joueur, int& action, bool
 				break;
 			}
 			else {
-				if (i == 5) {
-					TEXTE.setString("Vous avez perdu !");
-					if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-						HORLOGE_TOUR.restart();
-						action = 0;
-						combat = false;
-					}
-					return true;
+				TEXTE.setString("Vous avez perdu !");
+				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+					HORLOGE_TOUR.restart();
+					action = 0;
+					combat = false;
 				}
+				return true;
 			}
 		}
 	}
@@ -710,15 +746,6 @@ void jouerMusique(bool& combat) {
 			MUSIQUE_MAP.play();
 		}
 	}
-}
-
-void combatFalse(bool& combat){
-	combat = false;
-	HORLOGE_BUISSON.restart();
-	HORLOGE_CHOIX.restart();
-	HORLOGE_TOUR.restart();
-	HORLOGE_ANIMATION_COMBAT.restart();
-	HORLOGE_POKEBALL.restart();
 }
 
 int main()
@@ -782,6 +809,9 @@ int main()
 	int cptAnimCombat = 0;
 	int xRect = 0;
 	int yRect = 0;
+
+	//String permettant de savoir quelle fenêtre afficher
+	string ecran = "menu"; // "menu" | "jeu" | "fin"
 		
 	//Boucle de la fenêtre
 	while (window.isOpen()) {
@@ -810,6 +840,9 @@ int main()
 				else if (event.key.code == sf::Keyboard::Right) {
 					bouge = true;
 					vecteurDeplacement = sf::Vector2f(.010, 0);
+				}
+				else if (event.key.code == sf::Keyboard::Enter && (ecran == "menu" || ecran == "fin")) {
+					ecran = "jeu";
 				}
 				break;
 			case sf::Event::KeyReleased:
@@ -840,118 +873,148 @@ int main()
 
 		jouerMusique(combat);
 
-		if (combat && cptAnimCombat < 144) {
-			//A CHANGER, à essayer d'adapter à la gameView
-			if (cptAnimCombat == 0) {
-				xRect = 0;
-				yRect = 0;
-			}
-			RECTANGLE_ANIMATION_COMBAT.setPosition(sf::Vector2f(xRect, yRect));
-			if (HORLOGE_ANIMATION_COMBAT.getElapsedTime().asSeconds() > 0.02f) {
-				HORLOGE_ANIMATION_COMBAT.restart();
-				cptAnimCombat++;
-				window.draw(RECTANGLE_ANIMATION_COMBAT);
-				xRect += 80;
-				if (xRect >= 1280) {
-					xRect = 0;
-					yRect += 80;
-				}
-				window.display();
-			}
-		}
-		else if (combat && cptAnimCombat >= 144) {
-			//---------Code et affichage pour le combat--------
+		if (ecran == "menu") {
+			//---------Code et affichage pour le menu--------
 			window.clear();
-
-			//Affichage du fond de combat
-			window.draw(FOND_COMBAT);
-
-			//Loop sur les animations des pokemons
-			joueur.loopPokemon();
-			tabPokemonEnnemi[randomEnnemi].loop();
-			//Affichage des pokemons
-			window.draw(joueur.getPokemon(iPokemonActif).getSprite());
-			window.draw(tabPokemonEnnemi[randomEnnemi].getSprite());
-
-			//On check les PV du pokémon actif et on change si il est mort
-
-			if (!changementPokemonMort(iPokemonActif, joueur, action, combat)) {
-
-				//Affichage de l'HUD.
-				hud(action, joueur);
-
-				//Gestion du combat
-				gestionChoix(action, clicPositionInventaire, clicPokemonActif, competence, combat, joueurLance, joueur, iPokemonActif, tabPokemonEnnemi[randomEnnemi], window);
-
-			}
-			else {
-				//On téléporte le joueur au centre Pokémon
-				joueur.getSprite().setPosition(450, 630);
-				combat = false;
-				action = 0;
-			}
-
-			//Affichage du texte
-			TEXTE_NOM_ALLIE.setString(joueur.getPokemon(iPokemonActif).getNom());
-			TEXTE_NOM_ENNEMI.setString(tabPokemonEnnemi[randomEnnemi].getNom());
-
-			//Affichage des PV
-			scalePv(joueur, tabPokemonEnnemi[randomEnnemi], iPokemonActif);
-			for (int i = 0; i < 6; i++) {
-				scalePvChoixPokemon(joueur.getPokemon(i), i);
-			}
-
-			//Gestion de la View
+			window.draw(MENU);
 			gameView.setSize(window.getSize().x, window.getSize().y);
 			gameView.setCenter(window.getSize().x / 2, window.getSize().y / 2);
 			window.setView(gameView);
-
-			//On affiche tout ce qui évolue dans le combat
-			window.draw(PV_POKEMON_ALLIE);
-			window.draw(PV_POKEMON_ENNEMI);
-			window.draw(TEXTE_NOM_ALLIE);
-			window.draw(TEXTE_NOM_ENNEMI);
-			window.draw(HUD);
-			if (action == 2) {
-				for (int i = 0; i < 6; i++) {
-					if (HUD.getTexture() == &TEXTURE_HUD_CHOIX_POKEMON) {
-						window.draw(TEXTE_ETAT_POKEMON[i]);
-						window.draw(TEXTE_NOM_POKEMON[i]);
-						window.draw(PV_CHOIX_POKEMON[i]);
+			window.display();
+		}
+		else if (ecran == "jeu") {
+			if (combat && cptAnimCombat < 144) {
+				//A CHANGER, à essayer d'adapter à la gameView
+				if (cptAnimCombat == 0) {
+					xRect = 0;
+					yRect = 0;
+				}
+				RECTANGLE_ANIMATION_COMBAT.setPosition(sf::Vector2f(xRect, yRect));
+				if (HORLOGE_ANIMATION_COMBAT.getElapsedTime().asSeconds() > 0.02f) {
+					HORLOGE_ANIMATION_COMBAT.restart();
+					cptAnimCombat++;
+					window.draw(RECTANGLE_ANIMATION_COMBAT);
+					xRect += 80;
+					if (xRect >= 1280) {
+						xRect = 0;
+						yRect += 80;
 					}
+					window.display();
 				}
 			}
-			window.draw(TEXTE);
+			else if (combat && cptAnimCombat >= 144) {
+				//---------Code et affichage pour le combat--------
+				window.clear();
 
-			window.display();
+				//Affichage du fond de combat
+				window.draw(FOND_COMBAT);
 
-		}
-		else {
-			//---------Code et affichage pour l'exploration--------
-			cptAnimCombat = 0;
-			//Vérifications des collisions et bordures puis déplacement du joueur.
-			if (bouge) {
-				combat = estSurCaseVerte(joueur);
-				randomEnnemi = rand() % 8;
+				//Loop sur les animations des pokemons
+				joueur.loopPokemon();
+				tabPokemonEnnemi[randomEnnemi].loop();
+				//Affichage des pokemons
+				window.draw(joueur.getPokemon(iPokemonActif).getSprite());
+				window.draw(tabPokemonEnnemi[randomEnnemi].getSprite());
+
+				//On check les PV du pokémon actif et on change si il est mort
+
+				if (!changementPokemonMort(iPokemonActif, joueur, action, combat)) {
+
+					//Affichage de l'HUD.
+					hud(action, joueur);
+
+					//Gestion du combat
+					gestionChoix(action, clicPositionInventaire, clicPokemonActif, competence, combat, joueurLance, joueur, iPokemonActif, tabPokemonEnnemi[randomEnnemi], window);
+
+				}
+				else {
+					//On téléporte le joueur au centre Pokémon
+					joueur.getSprite().setPosition(450, 630);
+					for (int i = 0; i < 6; i++) {
+						joueur.getPokemon(i).setPv(joueur.getPokemon(i).getPvMax());
+					}
+					combat = false;
+					action = 0;
+					if (SON_SOIN.getStatus() == sf::Music::Stopped) {
+						SON_SOIN.play();
+					}
+				}
+
+				//Affichage du texte
+				TEXTE_NOM_ALLIE.setString(joueur.getPokemon(iPokemonActif).getNom());
+				TEXTE_NOM_ENNEMI.setString(tabPokemonEnnemi[randomEnnemi].getNom());
+
+				//Affichage des PV
+				scalePv(joueur, tabPokemonEnnemi[randomEnnemi], iPokemonActif);
+				for (int i = 0; i < 6; i++) {
+					scalePvChoixPokemon(joueur.getPokemon(i), i);
+				}
+
+				//Gestion de la View
+				gameView.setSize(window.getSize().x, window.getSize().y);
+				gameView.setCenter(window.getSize().x / 2, window.getSize().y / 2);
+				window.setView(gameView);
+
+				//On affiche tout ce qui évolue dans le combat
+				window.draw(PV_POKEMON_ALLIE);
+				window.draw(PV_POKEMON_ENNEMI);
+				window.draw(TEXTE_NOM_ALLIE);
+				window.draw(TEXTE_NOM_ENNEMI);
+				window.draw(HUD);
+				if (action == 2) {
+					for (int i = 0; i < 6; i++) {
+						if (HUD.getTexture() == &TEXTURE_HUD_CHOIX_POKEMON) {
+							window.draw(TEXTE_ETAT_POKEMON[i]);
+							window.draw(TEXTE_NOM_POKEMON[i]);
+							window.draw(PV_CHOIX_POKEMON[i]);
+						}
+					}
+				}
+				else if (action == 1 && competence == 4) {
+					for (int i = 0; i < 4; i++) {
+						window.draw(TEXTE_COMPETENCE[i]);
+					}
+				}
+				window.draw(TEXTE);
+
+				window.display();
+
 			}
-			vecteurDeplacement = collisionsEtBordures(vecteurDeplacement, joueur);
-			joueur.deplacement(vecteurDeplacement);
+			else {
+				//---------Code et affichage pour l'exploration--------
+				cptAnimCombat = 0;
+				//Vérifications des collisions et bordures puis déplacement du joueur.
+				if (bouge) {
+					combat = estSurCaseVerte(joueur);
+					randomEnnemi = rand() % 8;
+				}
+				vecteurDeplacement = collisionsEtBordures(vecteurDeplacement, joueur);
+				joueur.deplacement(vecteurDeplacement);
 
-			//Affichage des éléments
+				//Affichage des éléments
 
+				window.clear();
+
+				window.draw(MAP);
+
+				newCameraX = min(max(minCameraX, joueur.getSprite().getPosition().x), maxCameraX);
+				newCameraY = min(max(minCameraY, joueur.getSprite().getPosition().y), maxCameraY);
+
+				gameView.setSize(window.getSize().x * zoom, window.getSize().y * zoom);
+				gameView.setCenter(newCameraX, newCameraY);
+				window.setView(gameView);
+
+				window.draw(joueur.getSprite());
+
+				window.display();
+			}
+		}
+		else if (ecran == "fin") {
 			window.clear();
-
-			window.draw(MAP);
-
-			newCameraX = min(max(minCameraX, joueur.getSprite().getPosition().x), maxCameraX);
-			newCameraY = min(max(minCameraY, joueur.getSprite().getPosition().y), maxCameraY);
-
-			gameView.setSize(window.getSize().x * zoom, window.getSize().y * zoom);
-			gameView.setCenter(newCameraX, newCameraY);
+			window.draw(MENU);
+			gameView.setSize(window.getSize().x, window.getSize().y);
+			gameView.setCenter(window.getSize().x / 2, window.getSize().y / 2);
 			window.setView(gameView);
-
-			window.draw(joueur.getSprite());
-
 			window.display();
 		}
 	}

@@ -131,8 +131,11 @@ void Pokemon::loop() {
 void Pokemon::attaquer(Pokemon& cible, Competence competence)
 {
 	float avantageElementaire = coeffAvantage(cible);
+	int pvPerdus = 0;
 
-	int pvPerdus = ((((20*0.4+2) * attaque * competence.getMultiplicateur() / 100) / 50) + 2) * avantageElementaire;
+	if (competence.getMultiplicateur() != 0) {
+		pvPerdus = ((((20 * 0.4 + 2) * attaque * competence.getMultiplicateur() / 100) / 50) + 2) * avantageElementaire;
+	}
 	cout << "PV Perdus : " << pvPerdus << endl;
 	cible.setPv(cible.getPv() - pvPerdus);
 
