@@ -37,9 +37,11 @@ public:
 	string getNomEtat();
 	void setEtat(int etat);
 	int getPvMax();
-	void loop();
 
+	void loop();
 	void attaquer(Pokemon& cible, Competence competence);
 	void soin();
+	float coeffAvantage(Pokemon cible);
+	void buffEtDebuff(Pokemon& cible, Competence competence);
 };
 

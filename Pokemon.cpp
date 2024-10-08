@@ -110,9 +110,6 @@ string Pokemon::getNomEtat()
 	case 2:
 		return "Brule";
 		break;
-	case 3:
-		return "Empoisonne"; 
-		break;
 	}
 }
 
@@ -133,8 +130,70 @@ void Pokemon::loop() {
 
 void Pokemon::attaquer(Pokemon& cible, Competence competence)
 {
-	//À modifier
-	cible.setPv(cible.getPv() - 100);
+	float avantageElementaire = coeffAvantage(cible);
+
+	int pvPerdus = ((((20*0.4+2) * attaque * competence.getMultiplicateur() / 100) / 50) + 2) * avantageElementaire;
+	cout << "PV Perdus : " << pvPerdus << endl;
+	cible.setPv(cible.getPv() - pvPerdus);
+
+	buffEtDebuff(cible, competence);
+}
+
+void Pokemon::buffEtDebuff(Pokemon& cible, Competence competence) {
+	int random = rand() % 100;
+
+	//Debuff Ennemis
+	if ((competence.getDebuff() == "Paralysie" || competence.getDebuff() == "Peur") && random > 70) {
+		cible.setEtat(1);
+	}
+	else if (competence.getDebuff() == "Brulure" && random > 70) {
+		cible.setEtat(2);
+	}
+	else if (competence.getDebuff() == "Baisse Attaque" && random > 70) {
+		cible.setAttaque(cible.getAttaque() - 30);
+	}
+	else if (competence.getDebuff() == "Baisse Vitesse" && random > 70) {
+		cible.setVitesse(cible.getVitesse() - 30);
+	}
+
+	//Buff Alliés
+	if (competence.getBuff() == "Buff tout") {
+		setAttaque(getAttaque() + 20);
+		setVitesse(getVitesse() + 30);
+	}
+	else if (competence.getBuff() == "Vitesse max") {
+		setVitesse(getVitesse() + 100);
+	}
+	else if (competence.getBuff() == "Augmentation Attaque") {
+		setAttaque(getAttaque() + 30);
+	}
+	else if (competence.getBuff() == "Se blesse") {
+		setPv(getPv() - 10);
+	}
+}
+
+float Pokemon::coeffAvantage(Pokemon cible)
+{
+	if (type == "Feu" && cible.getType() == "Glace") {
+		return 2;
+	}
+	else if (type == "Glace" && cible.getType() == "Plante") {
+		return 2;
+	}
+	else if (type == "Plante" && cible.getType() == "Electrik") {
+		return 2;
+	}
+	else if (type == "Electrik" && cible.getType() == "Vol") {
+		return 2;
+	}
+	else if (type == "Vol" && cible.getType() == "Dragon") {
+		return 2;
+	}
+	else if (type == "Dragon" && cible.getType() == "Feu") {
+		return 2;
+	}
+	else 
+		return 1;
 }
 
 void Pokemon::soin()
