@@ -8,7 +8,9 @@ Pokemon::Pokemon()
 	pv = 0;
 	pvMax = 0;
 	attaque = 0;
+	attaqueMax = 0;
 	vitesse = 0;
+	vitesseMax = 0;
 	etat = 0;
 }
 
@@ -20,7 +22,9 @@ Pokemon::Pokemon(string nom, string type, int pv, int attaque, int vitesse, Comp
 	this->pv = pv;
 	this->pvMax = pv;
 	this->attaque = attaque;
+	this->attaqueMax = attaque;
 	this->vitesse = vitesse;
+	this->vitesseMax = vitesse;
 	for (int i = 0; i < 4; i++)
 	{
 		this->competence[i] = competence[i];
@@ -116,6 +120,21 @@ string Pokemon::getNomEtat()
 int Pokemon::getPvMax()
 {
 	return pvMax;
+}
+
+sf::IntRect Pokemon::getRect()
+{
+	return rect;
+}
+
+int Pokemon::getAttaqueMax()
+{
+	return attaqueMax;
+}
+
+int Pokemon::getVitesseMax()
+{
+	return vitesseMax;
 }
 
 void Pokemon::loop() {

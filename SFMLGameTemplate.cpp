@@ -10,12 +10,15 @@ using namespace std;
 
 const int HAUTEUR	= 720;
 const int LARGEUR	= 1280;
+//Variable de scale pour afficher les textures en 720p
 const float SCALE_L = 3.878787878787879;
 const float SCALE_H = 3.287671232876712;
-const int POSX_BOUTON_GAUCHE	= 890;
-const int POSX_BOUTON_DROITE	= 1090;
+//Positions des boutons du menu de combat
+const int POSX_BOUTON_GAUCHE	= 790;
+const int POSX_BOUTON_DROITE	= 990;
 const int POSY_BOUTON_HAUT		= 580;
 const int POSY_BOUTON_BAS		= 650;
+//Positions des boutons des compétences
 const int POSX_BOUTON_COMPETENCE1	= 51;
 const int POSX_BOUTON_COMPETENCE2	= 346;
 const int POSX_BOUTON_COMPETENCE3	= 640;
@@ -25,6 +28,7 @@ const int POSY_BOUTON_COMPETENCE	= 561;
 sf::Texture POKEMONS;
 sf::Texture POKEMONS_ENNEMIS;
 sf::Texture PERSONNAGE;
+sf::Texture PERSONNAGE_DANSE;
 sf::Texture TEXTUREMAP;
 sf::Texture TEXTURE_FOND_COMBAT;
 sf::Texture TEXTURE_HUD_TEXTE;
@@ -36,6 +40,11 @@ sf::Texture TEXTURE_HUD_INVENTAIRE;
 sf::Texture TEXTURE_HUD_CHOIX_POKEMON;
 sf::Texture TEXTURE_MENU;
 sf::Texture TEXTURE_FIN;
+sf::Texture TEXTURE_BRULE;
+sf::Texture TEXTURE_PARALYSIE;
+
+sf::Sprite  DEBUFF;
+sf::Sprite	DEBUFF_ENNEMI;
 sf::Sprite	MAP;
 sf::Sprite  MENU;
 sf::Sprite  FIN;
@@ -45,6 +54,7 @@ sf::Sprite 	PV_POKEMON_ALLIE;
 sf::Sprite 	PV_POKEMON_ENNEMI;
 sf::Sprite 	POKEBALL;
 sf::Sprite	PV_CHOIX_POKEMON[6];
+
 sf::Font	FONT;
 sf::Text	TEXTE;
 sf::Text	TEXTE_NOM_ALLIE;
@@ -52,7 +62,9 @@ sf::Text	TEXTE_NOM_ENNEMI;
 sf::Text	TEXTE_NOM_POKEMON[6];
 sf::Text 	TEXTE_ETAT_POKEMON[6];
 sf::Text	TEXTE_COMPETENCE[4];
+
 sf::Image	MASQUE;
+
 sf::RectangleShape RECTANGLE_ANIMATION_COMBAT;
 
 sf::Music MUSIQUE_COMBAT;
@@ -64,7 +76,9 @@ sf::Clock HORLOGE_BUISSON;
 sf::Clock HORLOGE_POKEBALL;
 sf::Clock HORLOGE_TOUR;
 sf::Clock HORLOGE_ANIMATION_COMBAT;
+sf::Clock HORLOGE_EASTER_EGG;
 
+//Initialise toutes les variables globales
 int initialisation() {
 	//Initialisation des textures
 	if (!TEXTURE_POKEBALL.loadFromFile("Ressource/images/combat/pokeball.png"))
@@ -81,6 +95,8 @@ int initialisation() {
 		return EXIT_FAILURE;
 
 	if (!PERSONNAGE.loadFromFile("Ressource/images/sprisheet_personnage.png"))
+		return EXIT_FAILURE;
+	if (!PERSONNAGE_DANSE.loadFromFile("Ressource/images/sprisheet_personnage_danse.png"))
 		return EXIT_FAILURE;
 
 	//Initialisation de la map
@@ -151,6 +167,16 @@ int initialisation() {
 		return EXIT_FAILURE;
 	FIN.setTexture(TEXTURE_FIN);
 	FIN.setPosition(0, 0);
+
+	if (!TEXTURE_BRULE.loadFromFile("Ressource/images/combat/brule.png"))
+		return EXIT_FAILURE;
+
+	if (!TEXTURE_PARALYSIE.loadFromFile("Ressource/images/combat/paralyse.png"))
+		return EXIT_FAILURE;
+	DEBUFF.setScale(3, 3);
+	DEBUFF.setPosition(890, 440);
+	DEBUFF_ENNEMI.setScale(3, 3);
+	DEBUFF_ENNEMI.setPosition(200, 71);
 	
 	//Initialisation du texte
 	if (!FONT.loadFromFile("Ressource/font/pokemon.ttf"))
@@ -224,6 +250,7 @@ int initialisation() {
 	return EXIT_SUCCESS;
 }
 
+//Fonction qui gère la création des Pokemons et du joueur en fonction des variables globales
 void creation(Joueur& joueur, Pokemon tabPokemonEnnemi[]) {
 	//Création des Pokemons
 	Competence competencesAerodactyl[4] = { 
@@ -297,10 +324,11 @@ void creation(Joueur& joueur, Pokemon tabPokemonEnnemi[]) {
 
 	Inventaire inventaire = Inventaire();
 	joueur = Joueur("Sacha", starter, inventaire, PERSONNAGE, sf::IntRect(0, 0, 32, 35));
-	joueur.getSprite().setPosition(450, 300); 
+	joueur.getSprite().setPosition(450, 630);
 	joueur.getSprite().setOrigin(16, 17);
 }
 
+//Fonction qui vérifie les collisions grâce au masque
 sf::Vector2f collisionsEtBordures(sf::Vector2f vecteurDeplacement, Joueur& joueur) {
 	// Gestion des collisions
 	sf::Vector2f playerCenterPosition(joueur.getSprite().getPosition().x, joueur.getSprite().getPosition().y+14);
@@ -320,6 +348,7 @@ sf::Vector2f collisionsEtBordures(sf::Vector2f vecteurDeplacement, Joueur& joueu
 	return vecteurDeplacement;
 }
 
+//Fonction qui gère l'aléatoire de l'entrée en combat
 bool estSurCaseVerte(Joueur& joueur) {
 	int couleurPixelMasque = MASQUE.getPixel(joueur.getSprite().getPosition().x, joueur.getSprite().getPosition().y).toInteger();
 	int random = rand() % 100;
@@ -333,6 +362,15 @@ bool estSurCaseVerte(Joueur& joueur) {
 	return false;
 }
 
+bool estSurCaseRouge(Joueur& joueur) {
+	int couleurPixelMasque = MASQUE.getPixel(joueur.getSprite().getPosition().x, joueur.getSprite().getPosition().y).toInteger();
+	if (couleurPixelMasque == -67108609) {
+		return true;
+	}
+	return false;
+}
+
+//Fonction qui gère l'affichage du combat
 void hud(int action, Joueur& joueur) {
 	switch (action) {
 	case 0:
@@ -370,6 +408,7 @@ void hud(int action, Joueur& joueur) {
 	}
 }
 
+//Fonction qui vérifie où se trouve la souris parmis les 4 boutons des choix du combat
 int checkPosition(sf::RenderWindow& window) {
 	sf::Vector2i position = sf::Mouse::getPosition(window);
 	cout << "CheckPosition : " << position.x << ";" << position.y << endl;
@@ -390,6 +429,7 @@ int checkPosition(sf::RenderWindow& window) {
 		return 0;
 }
 
+//Fonction qui vérifie où se trouve la souris parmis les 4 boutons de l'inventaire
 int checkPositionInventaire(sf::RenderWindow& window) {
 	cout << "clic" << endl;
 	sf::Vector2i position = sf::Mouse::getPosition(window);
@@ -410,6 +450,7 @@ int checkPositionInventaire(sf::RenderWindow& window) {
 		return 0;
 }
 
+//Fonction qui vérifie où se trouve la souris parmis les 4 boutons des compétences
 int checkPositionCompetence(sf::RenderWindow& window) {
 	sf::Vector2i position = sf::Mouse::getPosition(window);
 
@@ -426,6 +467,7 @@ int checkPositionCompetence(sf::RenderWindow& window) {
 	return 4;
 }
 
+//Fonction qui vérifie où se trouve la souris parmis les 6 boutons de choix de Pokémon
 int checkPositionChoixPokemon(sf::RenderWindow& window, Joueur& joueur, int iPokemonActif) {
 	sf::Vector2i position = sf::Mouse::getPosition(window);
 
@@ -448,6 +490,7 @@ int checkPositionChoixPokemon(sf::RenderWindow& window, Joueur& joueur, int iPok
 	return -1;
 }
 
+//Fonction d'animation de la pokéball lors du lancer
 void animPokeball(float t, sf::RenderWindow& window) {
 	static int cptTop = 0;
 	sf::Vector2f vDebut(0, 400);
@@ -473,6 +516,7 @@ void animPokeball(float t, sf::RenderWindow& window) {
 	window.draw(POKEBALL);
 }
 
+//Fonction qui gère la partie Inventaire dans le menu Inventaire du combat
 void gestionInventaire(int& action, int& positionClicInventaire, bool& combat, int i, Joueur& joueur, Pokemon& pokemonEnnemi, sf::RenderWindow& window) {
 	static string s = "";
 	static bool joueurLance = false;
@@ -482,55 +526,77 @@ void gestionInventaire(int& action, int& positionClicInventaire, bool& combat, i
 	switch (positionClicInventaire) {
 	case 1:
 		//Soigner
-		if (HORLOGE_CHOIX.getElapsedTime().asSeconds() < 2) {
-			TEXTE.setString("Vous soignez votre Pokémon !");
-		}
-		else if (HORLOGE_CHOIX.getElapsedTime().asSeconds() > 2 && HORLOGE_CHOIX.getElapsedTime().asSeconds() < 4) {
-			TEXTE.setString("Le Pokémon ennemi attaque !");
-			if (!aSoigne) {
-				aSoigne = true;
-				joueur.soin(0);
-			}
-		}
-		else if (HORLOGE_CHOIX.getElapsedTime().asSeconds() > 4) {
-			HORLOGE_CHOIX.restart();
-			pokemonEnnemi.attaquer(joueur.getPokemon(i), pokemonEnnemi.getCompetence(rand() % 4));
+		if (joueur.getInventaire().getNbPotion() <= 0) {
+			TEXTE.setString("Vous n'avez plus de potion !");
 			action = 0;
 			positionClicInventaire = 0;
-			aSoigne = false;
+		}
+		else {
+			if (HORLOGE_CHOIX.getElapsedTime().asSeconds() < 2) {
+				TEXTE.setString("Vous soignez votre Pokémon !");
+			}
+			else if (HORLOGE_CHOIX.getElapsedTime().asSeconds() > 2 && HORLOGE_CHOIX.getElapsedTime().asSeconds() < 4) {
+				TEXTE.setString("Le Pokémon ennemi attaque !");
+				if (!aSoigne) {
+					aSoigne = true;
+					joueur.soin(0);
+				}
+			}
+			else if (HORLOGE_CHOIX.getElapsedTime().asSeconds() > 4) {
+				HORLOGE_CHOIX.restart();
+				pokemonEnnemi.attaquer(joueur.getPokemon(i), pokemonEnnemi.getCompetence(rand() % 4));
+				action = 0;
+				positionClicInventaire = 0;
+				aSoigne = false;
+			}
 		}
 		break;
 	case 2:
 		//Pokéball
-		animPokeball(HORLOGE_CHOIX.getElapsedTime().asSeconds(), window);
-		if (HORLOGE_CHOIX.getElapsedTime().asSeconds() > 2 && HORLOGE_CHOIX.getElapsedTime().asSeconds() < 4) {
-			pokemonEnnemi.getSprite().setColor(sf::Color(0, 0, 0, 0));
-			if (joueurLance == false) {
-				joueurLance = true;
-				s = joueur.pokeball(pokemonEnnemi, POKEMONS);
+		if (joueur.getInventaire().getNbPokeball() <= 0) {
+			TEXTE.setString("Vous n'avez plus de pokéball !");
+			if (HORLOGE_CHOIX.getElapsedTime().asSeconds() > 2) {
+				action = 0;
+				positionClicInventaire = 0;
 			}
-			TEXTE.setString(s);
 		}
-		else if (HORLOGE_CHOIX.getElapsedTime().asSeconds() > 4) {
-			HORLOGE_CHOIX.restart();
-			action = 0;
-			positionClicInventaire = 0;
-			if (s == "Capture reussie" || s == "Capture réussie, mais vous êtes déjà complet en Pokémon.")
-				combat = false;
-			pokemonEnnemi.getSprite().setColor(sf::Color(255, 255, 255, 255));
-			HORLOGE_BUISSON.restart();
-			joueurLance = false;
+		else {
+			animPokeball(HORLOGE_CHOIX.getElapsedTime().asSeconds(), window);
+			if (HORLOGE_CHOIX.getElapsedTime().asSeconds() > 2 && HORLOGE_CHOIX.getElapsedTime().asSeconds() < 4) {
+				pokemonEnnemi.getSprite().setColor(sf::Color(0, 0, 0, 0));
+				if (!joueurLance) {
+					joueurLance = true;
+					s = joueur.pokeball(pokemonEnnemi, POKEMONS);
+				}
+				TEXTE.setString(s);
+			}
+			else if (HORLOGE_CHOIX.getElapsedTime().asSeconds() > 4) {
+				HORLOGE_CHOIX.restart();
+				action = 0;
+				positionClicInventaire = 0;
+				if (s == "Capture reussie" || s == "Capture réussie, mais vous êtes déjà complet en Pokémon.") {
+					combat = false;
+				}
+				pokemonEnnemi.getSprite().setColor(sf::Color(255, 255, 255, 255));
+				joueurLance = false;
+			}
 		}
 		break;
 	case 3:
 		//Spray
-		if (HORLOGE_CHOIX.getElapsedTime().asSeconds() < 4)
-			TEXTE.setString("Spray utilisé !");
-		else {
-			joueur.getPokemon(i).setEtat(0);
+		if (joueur.getInventaire().getNbSpray() <= 0) {
+			TEXTE.setString("Vous n'avez plus de spray !");
 			positionClicInventaire = 0;
 			action = 0;
-			HORLOGE_BUISSON.restart();
+		}
+		else {
+			if (HORLOGE_CHOIX.getElapsedTime().asSeconds() < 4)
+				TEXTE.setString("Spray utilisé !");
+			else {
+				joueur.getPokemon(i).setEtat(0);
+				positionClicInventaire = 0;
+				action = 0;
+			}
 		}
 		break;
 	case 4:
@@ -541,19 +607,39 @@ void gestionInventaire(int& action, int& positionClicInventaire, bool& combat, i
 	}
 }
 
+//Fonction qui gère la partie d'Attaque et le choix de la compétence
 void gestionAttaque(int& action, int& competence, bool& combat, Joueur& joueur, int& iPokemonActif, Pokemon& pokemonEnnemi, sf::RenderWindow& window) {
 	static bool joueurJoue = true;
 	static bool pokemonJoue = true;
 	static bool seRepose = false;
-	int competenceRandomEnnemi = 0;
+	static bool debuffApplique = false;
+	static bool debuffAppliqueEnnemi = false;
+	static int competenceRandomEnnemi = 0;
+	int randomParalysie = 0;
 
-	if (competence != 4) {
+	if (competence != 4) { //Si le joueur a choisi une compétence
+		if (joueur.getPokemon(iPokemonActif).getEtat() == 2 && !debuffApplique) { //Si le pokémon du joueur est brulé
+			HUD.setTexture(TEXTURE_HUD_TEXTE);
+			TEXTE.setString("Votre Pokémon brûle !");
+			joueur.getPokemon(iPokemonActif).setPv(joueur.getPokemon(iPokemonActif).getPv() - 10);
+			debuffApplique = true;
+		}
+		if (pokemonEnnemi.getEtat() == 2 && !debuffAppliqueEnnemi) { //Si le pokémon ennemi est brulé
+			HUD.setTexture(TEXTURE_HUD_TEXTE);
+			TEXTE.setString("Le Pokémon ennemi brûle !");
+			pokemonEnnemi.setPv(pokemonEnnemi.getPv() - 10);
+			debuffAppliqueEnnemi = true;
+		}
+
 		string competenceJoueur = joueur.getPokemon(iPokemonActif).getCompetence(competence).getEffet();
 
 		//Condition si jamais le joueur a utilisé une technique obligeant le repos
-		if (seRepose) {
+		if (seRepose || joueur.getPokemon(iPokemonActif).getEtat() == 1) {
 			HUD.setTexture(TEXTURE_HUD_TEXTE);
-			TEXTE.setString("Votre Pokémon se repose !");
+			if (seRepose)
+				TEXTE.setString("Votre Pokémon se repose !");
+			else
+				TEXTE.setString("Votre Pokémon est paralysé !");
 			if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
 				TEXTE.setString("Le Pokémon ennemi attaque !");
 				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 4.0) {
@@ -563,96 +649,156 @@ void gestionAttaque(int& action, int& competence, bool& combat, Joueur& joueur, 
 					HORLOGE_TOUR.restart();
 					action = 0;
 					seRepose = false;
+					debuffApplique = false;
+					debuffAppliqueEnnemi = false;
+					randomParalysie = rand() % 100;
+					if (joueur.getPokemon(iPokemonActif).getEtat() == 1 && randomParalysie >= 50)
+						joueur.getPokemon(iPokemonActif).setEtat(0);
+					if (pokemonEnnemi.getEtat() == 1 && randomParalysie >= 50)
+						pokemonEnnemi.setEtat(0);
 				}
 			}
 		}
-		//Condition si le joueur est plus rapide
+		//Condition si le joueur est plus rapide ou que sa compétence possède l'effet Prioritaire
 		else if (joueur.getPokemon(iPokemonActif).getVitesse() >= pokemonEnnemi.getVitesse() || competenceJoueur == "Prioritaire") {
-			if (joueurJoue) {
-				if (competence != 4) {
-					HUD.setTexture(TEXTURE_HUD_TEXTE);
-					TEXTE.setString("Vous avez utilisé " + joueur.getPokemon(iPokemonActif).getCompetence(competence).getNom() + " !");
-					if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-						if (competenceJoueur == "Dgts double") {
+			if (joueurJoue) { //Tour du joueur
+				HUD.setTexture(TEXTURE_HUD_TEXTE);
+				TEXTE.setString("Vous avez utilisé " + joueur.getPokemon(iPokemonActif).getCompetence(competence).getNom() + " !");
+				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+					if (competenceJoueur == "Dgts double") {
+						joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
+					}
+					else if (competenceJoueur == "2 à 5") {
+						int random = rand() % 4;
+						for (int i = 0; i < random; i++) {
 							joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
 						}
-						else if (competenceJoueur == "2 à 5") {
-							int random = rand() % 4;
-							for (int i = 0; i < random; i++) {
-								joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
-							}
-						}
-						joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
-						joueurJoue = false;
-						HORLOGE_TOUR.restart();
-						competenceRandomEnnemi = rand() % 4;
 					}
+					joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
+					joueurJoue = false;
+					HORLOGE_TOUR.restart();
+					competenceRandomEnnemi = rand() % 4;
 				}
 			}
-			else if (pokemonEnnemi.getPv() > 0) {
+			else if (pokemonEnnemi.getPv() > 0 && pokemonEnnemi.getEtat() != 1) { //Tour du Pokémon ennemi s'il n'est pas paralysé
 				HUD.setTexture(TEXTURE_HUD_TEXTE);
-				TEXTE.setString("Le Pokémon ennemi attaque  et utilise "+ pokemonEnnemi.getCompetence(competenceRandomEnnemi).getNom() + "!");
+				TEXTE.setString("Le Pokémon ennemi attaque  et utilise " + pokemonEnnemi.getCompetence(competenceRandomEnnemi).getNom() + "!");
 				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
 					competence = 4;
 					joueurJoue = true;
 					pokemonEnnemi.attaquer(joueur.getPokemon(iPokemonActif), pokemonEnnemi.getCompetence(competenceRandomEnnemi));
 					HORLOGE_TOUR.restart();
 					action = 0;
+					debuffAppliqueEnnemi = false;
+					debuffApplique = false;
 					if (competenceJoueur == "Repos")
 						seRepose = true;
+					randomParalysie = rand() % 100;
+					if (joueur.getPokemon(iPokemonActif).getEtat() == 1 && randomParalysie >= 50)
+						joueur.getPokemon(iPokemonActif).setEtat(0);
+					if (pokemonEnnemi.getEtat() == 1 && randomParalysie >= 50)
+						pokemonEnnemi.setEtat(0);
 				}
 			}
-			else if (pokemonEnnemi.getPv() <= 0) {
+			else if (pokemonEnnemi.getPv() > 0 && pokemonEnnemi.getEtat() == 1) { //Tour du Pokémon ennemi s'il est paralysé
+				HUD.setTexture(TEXTURE_HUD_TEXTE);
+				TEXTE.setString("Le Pokémon ennemi est paralysé !"); 
+				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+					cout << "coucou" << endl;
+					competence = 4;
+					joueurJoue = true;
+					HORLOGE_TOUR.restart();
+					action = 0;
+					debuffAppliqueEnnemi = false;
+					debuffApplique = false;
+					if (competenceJoueur == "Repos")
+						seRepose = true;
+					randomParalysie = rand() % 100;
+					if (joueur.getPokemon(iPokemonActif).getEtat() == 1 && randomParalysie >= 50)
+						joueur.getPokemon(iPokemonActif).setEtat(0);
+					if (pokemonEnnemi.getEtat() == 1 && randomParalysie >= 50)
+						pokemonEnnemi.setEtat(0);
+				}
+			}
+			else if (pokemonEnnemi.getPv() <= 0) { //Fin du combat, ennemi K.O.
 				HUD.setTexture(TEXTURE_HUD_TEXTE);
 				TEXTE.setString("Vous avez vaincu le Pokémon ennemi !");
 				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
 					joueurJoue = true;
 					HORLOGE_TOUR.restart();
 					action = 0;
+					debuffAppliqueEnnemi = false;
+					debuffApplique = false;
 					combat = false;
+					randomParalysie = rand() % 100;
+					if (joueur.getPokemon(iPokemonActif).getEtat() == 1 && randomParalysie >= 50)
+						joueur.getPokemon(iPokemonActif).setEtat(0);
+					if (pokemonEnnemi.getEtat() == 1 && randomParalysie >= 50)
+						pokemonEnnemi.setEtat(0);
 				}
 			}
 		}
 		//Condition si l'ennemi est plus rapide
 		else { //if (joueur.getPokemon(iPokemonActif).getVitesse() >= pokemonEnnemi.getVitesse())
-			if (competence != 4) {
-				if (pokemonJoue) {
+			if (pokemonJoue && pokemonEnnemi.getEtat() != 1) { //Pokémon ennemi attaque
+				HUD.setTexture(TEXTURE_HUD_TEXTE);
+				TEXTE.setString("Le Pokémon ennemi attaque !");
+				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+					pokemonJoue = false;
+					pokemonEnnemi.attaquer(joueur.getPokemon(iPokemonActif), pokemonEnnemi.getCompetence(rand() % 4));
+					HORLOGE_TOUR.restart();
+				}
+			}
+			else if (pokemonJoue && pokemonEnnemi.getEtat() == 1) { //Pokémon ennemi paralysé
+				HUD.setTexture(TEXTURE_HUD_TEXTE);
+				TEXTE.setString("Le Pokémon ennemi est paralysé !");
+				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+					pokemonJoue = false;
+					HORLOGE_TOUR.restart();
+				}
+			}
+			else if (joueur.getPokemon(iPokemonActif).getPv() > 0) { //Tour du joueur
+				if (competence != 4) {
 					HUD.setTexture(TEXTURE_HUD_TEXTE);
-					TEXTE.setString("Le Pokémon ennemi attaque !");
+					TEXTE.setString("Vous avez utilisé " + joueur.getPokemon(iPokemonActif).getCompetence(competence).getNom() + " !");
 					if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-						pokemonJoue = false;
-						pokemonEnnemi.attaquer(joueur.getPokemon(iPokemonActif), pokemonEnnemi.getCompetence(rand() % 4));
-						HORLOGE_TOUR.restart();
-					}
-				}
-				else if (joueur.getPokemon(iPokemonActif).getPv() > 0) {
-					if (competence != 4) {
-						HUD.setTexture(TEXTURE_HUD_TEXTE);
-						TEXTE.setString("Vous avez utilisé " + joueur.getPokemon(iPokemonActif).getCompetence(competence).getNom() + " !");
-						if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-							joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
-							pokemonJoue = true;
-							HORLOGE_TOUR.restart();
-							competence = 4;
-							action = 0;
-							if (competenceJoueur == "Repos")
-								seRepose = true;
-						}
-					}
-				}
-				else if (joueur.getPokemon(iPokemonActif).getPv() <= 0) {
-					TEXTE.setString("Changement de Pokemon !");
-					if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+						joueur.getPokemon(iPokemonActif).attaquer(pokemonEnnemi, joueur.getPokemon(iPokemonActif).getCompetence(competence));
 						pokemonJoue = true;
 						HORLOGE_TOUR.restart();
+						competence = 4;
 						action = 0;
+						debuffAppliqueEnnemi = false;
+						debuffApplique = false;
+						if (competenceJoueur == "Repos")
+							seRepose = true;
+						randomParalysie = rand() % 100;
+						if (joueur.getPokemon(iPokemonActif).getEtat() == 1 && randomParalysie >= 50)
+							joueur.getPokemon(iPokemonActif).setEtat(0);
+						if (pokemonEnnemi.getEtat() == 1 && randomParalysie >= 50)
+							pokemonEnnemi.setEtat(0);
 					}
+				}
+			}
+			else if (joueur.getPokemon(iPokemonActif).getPv() <= 0) {
+				TEXTE.setString("Changement de Pokemon !");
+				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
+					pokemonJoue = true;
+					HORLOGE_TOUR.restart();
+					action = 0;
+					debuffAppliqueEnnemi = false;
+					debuffApplique = false;
+					randomParalysie = rand() % 100;
+					if (joueur.getPokemon(iPokemonActif).getEtat() == 1 && randomParalysie >= 50)
+						joueur.getPokemon(iPokemonActif).setEtat(0);
+					if (pokemonEnnemi.getEtat() == 1 && randomParalysie >= 50)
+						pokemonEnnemi.setEtat(0);
 				}
 			}
 		}
 	}
 }
 
+//Fonction qui gère les choix du joueur
 void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActif, int& competence, bool& combat, bool& joueurLance, Joueur& joueur, int& iPokemonActif, Pokemon& pokemonEnnemi, sf::RenderWindow& window) {
 
 	switch (action) {
@@ -694,6 +840,7 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActi
 	}
 }
 
+//Fonction qui gère l'affichage des PV des Pokémons
 void scalePv(Joueur& joueur, Pokemon& pokemonEnnemi, int iPokemonActif) {
 	float longueurJoueur = 5.32 * joueur.getPokemon(iPokemonActif).getPv() / joueur.getPokemon(iPokemonActif).getPvMax();
 	float longueurEnnemi = 5.32 * pokemonEnnemi.getPv() / pokemonEnnemi.getPvMax();
@@ -707,11 +854,13 @@ void scalePv(Joueur& joueur, Pokemon& pokemonEnnemi, int iPokemonActif) {
 	PV_POKEMON_ENNEMI.setScale(longueurEnnemi*SCALE_L, SCALE_H);
 } 
 
+//Fonction qui gère l'affichage des PV des Pokémons dans le menu de choix de Pokémon
 void scalePvChoixPokemon(Pokemon& pokemon, int i) {
 	float longueur = 5.32 * pokemon.getPv() / pokemon.getPvMax();
 	PV_CHOIX_POKEMON[i].setScale(longueur * SCALE_L, SCALE_H);
 }
 
+//Fonction qui gère le changement de Pokémon si le Pokémon actif est mort
 bool changementPokemonMort(int& iPokemonActif, Joueur& joueur, int& action, bool& combat) {
 	if (joueur.getPokemon(iPokemonActif).getPv() <= 0) {
 		for (int i = 0; i < 6; i++) {
@@ -733,6 +882,28 @@ bool changementPokemonMort(int& iPokemonActif, Joueur& joueur, int& action, bool
 	return false;
 }
 
+//Fonction qui soigne tous les Pokémons et rempli l'inventaire du joueur
+void soinEtRefill(Joueur& joueur) {
+	for (int i = 0; i < 6; i++) {
+		joueur.getPokemon(i).setPv(joueur.getPokemon(i).getPvMax());
+		joueur.getPokemon(i).setEtat(0);
+	}
+	joueur.getInventaire().setNbPotion(5);
+	joueur.getInventaire().setNbPokeball(20);
+	joueur.getInventaire().setNbSpray(5);
+
+
+}
+
+//Fonction qui réinitialise les PV et l'état de tous les Pokémons ennemis après un combat
+void resetEnnemi(Pokemon pokemon[], int taille) {
+	for (int i = 0; i < taille; i++) {
+		pokemon[i].setPv(pokemon[i].getPvMax());
+		pokemon[i].setEtat(0);
+	}
+}
+
+//Fonction qui gère la musique
 void jouerMusique(bool& combat) {
 	if (combat) {
 		MUSIQUE_MAP.stop();
@@ -826,23 +997,35 @@ int main()
 				break;
 			case sf::Event::KeyPressed:
 				if (event.key.code == sf::Keyboard::Up) {
+					HORLOGE_EASTER_EGG.restart();
 					bouge = true;
 					vecteurDeplacement = sf::Vector2f(0, -.010);
 				}
 				else if (event.key.code == sf::Keyboard::Down) {
+					HORLOGE_EASTER_EGG.restart();
 					bouge = true;
 					vecteurDeplacement = sf::Vector2f(0, .010);
 				}
 				else if (event.key.code == sf::Keyboard::Left) {
+					HORLOGE_EASTER_EGG.restart();
 					bouge = true;
 					vecteurDeplacement = sf::Vector2f(-.010, 0);
 				}
 				else if (event.key.code == sf::Keyboard::Right) {
+					HORLOGE_EASTER_EGG.restart();
 					bouge = true;
 					vecteurDeplacement = sf::Vector2f(.010, 0);
 				}
 				else if (event.key.code == sf::Keyboard::Enter && (ecran == "menu" || ecran == "fin")) {
 					ecran = "jeu";
+				}
+				else if (event.key.code == sf::Keyboard::Enter && ecran == "jeu") {
+					if (estSurCaseRouge(joueur)) {
+						soinEtRefill(joueur);
+						if (SON_SOIN.getStatus() == sf::Music::Stopped) {
+							SON_SOIN.play();
+						}
+					}
 				}
 				break;
 			case sf::Event::KeyReleased:
@@ -871,8 +1054,6 @@ int main()
 			}
 		}
 
-		jouerMusique(combat);
-
 		if (ecran == "menu") {
 			//---------Code et affichage pour le menu--------
 			window.clear();
@@ -881,10 +1062,11 @@ int main()
 			gameView.setCenter(window.getSize().x / 2, window.getSize().y / 2);
 			window.setView(gameView);
 			window.display();
+			HORLOGE_EASTER_EGG.restart();
 		}
 		else if (ecran == "jeu") {
+			jouerMusique(combat);
 			if (combat && cptAnimCombat < 144) {
-				//A CHANGER, à essayer d'adapter à la gameView
 				if (cptAnimCombat == 0) {
 					xRect = 0;
 					yRect = 0;
@@ -928,7 +1110,7 @@ int main()
 
 				}
 				else {
-					//On téléporte le joueur au centre Pokémon
+					//On téléporte le joueur au centre Pokémon, on soigne les Pokémon et on retourne à l'exploration
 					joueur.getSprite().setPosition(450, 630);
 					for (int i = 0; i < 6; i++) {
 						joueur.getPokemon(i).setPv(joueur.getPokemon(i).getPvMax());
@@ -977,7 +1159,28 @@ int main()
 				}
 				window.draw(TEXTE);
 
+				//Si le pokémon allié est débuff, on affiche
+				if (joueur.getPokemon(iPokemonActif).getEtat() == 2) {
+					DEBUFF.setTexture(TEXTURE_BRULE);
+					window.draw(DEBUFF);
+				}
+				else if (joueur.getPokemon(iPokemonActif).getEtat() == 1) {
+					DEBUFF.setTexture(TEXTURE_PARALYSIE);
+					window.draw(DEBUFF);
+				}
+				//Si le pokémon ennemi est débuff, on affiche
+				if (tabPokemonEnnemi[randomEnnemi].getEtat() == 2) {
+					DEBUFF_ENNEMI.setTexture(TEXTURE_BRULE);
+					window.draw(DEBUFF_ENNEMI);
+				}
+				else if (tabPokemonEnnemi[randomEnnemi].getEtat() == 1) {
+					DEBUFF_ENNEMI.setTexture(TEXTURE_PARALYSIE);
+					window.draw(DEBUFF_ENNEMI);
+				}
+
 				window.display();
+
+				HORLOGE_EASTER_EGG.restart();
 
 			}
 			else {
@@ -985,11 +1188,21 @@ int main()
 				cptAnimCombat = 0;
 				//Vérifications des collisions et bordures puis déplacement du joueur.
 				if (bouge) {
-					combat = estSurCaseVerte(joueur);
+					if (combat = estSurCaseVerte(joueur))
+						resetEnnemi(tabPokemonEnnemi, 8);
 					randomEnnemi = rand() % 8;
 				}
 				vecteurDeplacement = collisionsEtBordures(vecteurDeplacement, joueur);
-				joueur.deplacement(vecteurDeplacement);
+
+				//Easter Egg, joueur danse sur la musique
+				if (HORLOGE_EASTER_EGG.getElapsedTime().asSeconds() > 10.0f) {
+					joueur.getSprite().setTexture(PERSONNAGE_DANSE);
+					joueur.danse();
+				}
+				else {
+					joueur.getSprite().setTexture(PERSONNAGE);
+					joueur.deplacement(vecteurDeplacement);
+				}
 
 				//Affichage des éléments
 
@@ -1019,11 +1232,3 @@ int main()
 		}
 	}
 }
-
-//// Load a music to play
-//sf::Music music;
-//if (!music.openFromFile("Ressource/musique/nice_music.mp3"))
-//return EXIT_FAILURE;
-//
-//// Play the music
-////music.play();

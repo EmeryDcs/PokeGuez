@@ -84,16 +84,27 @@ void Joueur::soin(int i)
 	inventaire.utiliserPotion();
 }
 
-string Joueur::pokeball(Pokemon pokemon, sf::Texture texture)
+string Joueur::pokeball(Pokemon pokemon, sf::Texture& texture)
 {
 	float coeff = (1.f - (pokemon.getPv() * 1.0) / (pokemon.getPvMax() * 1.0)) + (1 - 1/(pokemon.getEtat()+1)) ;
-	cout << "coeff : " << coeff << endl;
 	inventaire.utiliserPokeball();
 	if (coeff >= 0.75) {
 		for (int i = 0; i < sizeof(tabPokemon)/sizeof(tabPokemon[0]) - 1; i++) {
 			if (tabPokemon[i].getNom() == "Pokéball vide") {
-				tabPokemon[i] = pokemon;
-				tabPokemon[i].getSprite().setTexture(texture);
+				Competence tabCompetence[4] = { pokemon.getCompetence(0), pokemon.getCompetence(1), pokemon.getCompetence(2), pokemon.getCompetence(3) };
+				tabPokemon[i] = Pokemon(
+					pokemon.getNom(), 
+					pokemon.getType(), 
+					pokemon.getPvMax(), 
+					pokemon.getAttaqueMax(), 
+					pokemon.getVitesseMax(), 
+					tabCompetence,
+					0, 
+					texture, 
+					pokemon.getRect()
+				);
+				tabPokemon[i].getSprite().setPosition(tabPokemon[0].getSprite().getPosition());
+				tabPokemon[i].getSprite().setScale(tabPokemon[0].getSprite().getScale());
 				return "Capture reussie";
 			}
 		}
@@ -109,5 +120,17 @@ void Joueur::loopPokemon() {
 		if (tabPokemon[i].getNom() != "") {
 			tabPokemon[i].loop();
 		}
+	}
+}
+
+void Joueur::danse() {
+	rect.top = 0;
+	if (horloge.getElapsedTime().asSeconds() > .5f) {
+		rect.left += 32;
+		cout << rect.left << endl;
+		if (rect.left >= 256)
+			rect.left = 0;
+		sprite.setTextureRect(rect);
+		horloge.restart();
 	}
 }

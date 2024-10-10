@@ -15,7 +15,6 @@ class Joueur :
 	string nom;
 	Pokemon tabPokemon[6];
 	Inventaire inventaire;
-	sf::Clock horloge;
 
 public:
 	Joueur();
@@ -30,7 +29,8 @@ public:
 	void deplacement(sf::Vector2f);
 	void loop();
 	void soin(int i);
-	string pokeball(Pokemon pokemon, sf::Texture texture);
+	string pokeball(Pokemon pokemon, sf::Texture& texture);
 	void loopPokemon();
+	void danse();
 };
 

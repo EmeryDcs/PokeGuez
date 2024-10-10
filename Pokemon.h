@@ -13,7 +13,9 @@ class Pokemon :
 	int pv;
 	int pvMax;
 	int attaque;
+	int attaqueMax;
 	int vitesse;
+	int vitesseMax;
 	Competence competence[4];
 	int etat;
 
@@ -37,6 +39,9 @@ public:
 	string getNomEtat();
 	void setEtat(int etat);
 	int getPvMax();
+	sf::IntRect getRect();
+	int getAttaqueMax();
+	int getVitesseMax();
 
 	void loop();
 	void attaquer(Pokemon& cible, Competence competence);
