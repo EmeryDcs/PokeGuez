@@ -89,7 +89,7 @@ string Joueur::pokeball(Pokemon pokemon, sf::Texture& texture)
 	float coeff = (1.f - (pokemon.getPv() * 1.0) / (pokemon.getPvMax() * 1.0)) + (1 - 1/(pokemon.getEtat()+1)) ;
 	inventaire.utiliserPokeball();
 	if (coeff >= 0.75) {
-		for (int i = 0; i < sizeof(tabPokemon)/sizeof(tabPokemon[0]) - 1; i++) {
+		for (int i = 0; i < 6; i++) {
 			if (tabPokemon[i].getNom() == "Pokéball vide") {
 				Competence tabCompetence[4] = { pokemon.getCompetence(0), pokemon.getCompetence(1), pokemon.getCompetence(2), pokemon.getCompetence(3) };
 				tabPokemon[i] = Pokemon(
@@ -105,10 +105,11 @@ string Joueur::pokeball(Pokemon pokemon, sf::Texture& texture)
 				);
 				tabPokemon[i].getSprite().setPosition(tabPokemon[0].getSprite().getPosition());
 				tabPokemon[i].getSprite().setScale(tabPokemon[0].getSprite().getScale());
+				cout << "capture" << endl;
 				return "Capture reussie";
 			}
 		}
-		return "Capture réussie, mais vous êtes déjà complet en Pokémon.";
+		return "Capture réussie, mais vous \nêtes déjà complet en Pokémon.";
 	}
 	else {
 		return "Capture echouee";

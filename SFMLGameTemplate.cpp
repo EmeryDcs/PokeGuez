@@ -371,7 +371,7 @@ bool estSurCaseRouge(Joueur& joueur) {
 }
 
 //Fonction qui gère l'affichage du combat
-void hud(int action, Joueur& joueur) {
+void hud(int action, Joueur& joueur, int iPokemonActif) {
 	switch (action) {
 	case 0:
 		HUD.setTexture(TEXTURE_HUD_CHOIX_ACTION);
@@ -379,7 +379,7 @@ void hud(int action, Joueur& joueur) {
 	case 1:
 		HUD.setTexture(TEXTURE_HUD_CHOIX_COMPETENCE);
 		for (int i = 0; i < 4; i++) {
-			TEXTE_COMPETENCE[i].setString(joueur.getPokemon(0).getCompetence(i).getNom());
+			TEXTE_COMPETENCE[i].setString(joueur.getPokemon(iPokemonActif).getCompetence(i).getNom());
 		}
 		break;
 	case 2:
@@ -411,7 +411,6 @@ void hud(int action, Joueur& joueur) {
 //Fonction qui vérifie où se trouve la souris parmis les 4 boutons des choix du combat
 int checkPosition(sf::RenderWindow& window) {
 	sf::Vector2i position = sf::Mouse::getPosition(window);
-	cout << "CheckPosition : " << position.x << ";" << position.y << endl;
 	TEXTE.setString("");
 	//Bouton Haut Gauche
 	if ((position.x >= POSX_BOUTON_GAUCHE && position.x < POSX_BOUTON_DROITE) && (position.y >= POSY_BOUTON_HAUT && position.y < POSY_BOUTON_BAS))
@@ -431,7 +430,6 @@ int checkPosition(sf::RenderWindow& window) {
 
 //Fonction qui vérifie où se trouve la souris parmis les 4 boutons de l'inventaire
 int checkPositionInventaire(sf::RenderWindow& window) {
-	cout << "clic" << endl;
 	sf::Vector2i position = sf::Mouse::getPosition(window);
 	TEXTE.setString("");
 	//Bouton Haut Gauche
@@ -478,11 +476,11 @@ int checkPositionChoixPokemon(sf::RenderWindow& window, Joueur& joueur, int iPok
 		return 0;
 	else if ((position.x >= 349 + l && position.x < 945 + 400 + l * 2 && position.y > 247 && position.y < 247 + h) && joueur.getPokemon(1).getNom() != "Pokéball vide") // HAUT DROITE
 		return 1;
-	else if ((position.x >= 349 && position.x < 475 + 400 + l && position.y > 247 + 158 && position.y < 247 + 158 + h) && joueur.getPokemon(2).getNom() != "Pokéball vide") // MILIEU GAUCHE
+	else if ((position.x >= 349 && position.x < 475 + l && position.y > 247 + 158 && position.y < 247 + 158 + h) && joueur.getPokemon(2).getNom() != "Pokéball vide") // MILIEU GAUCHE
 		return 2;
 	else if ((position.x >= 349 + l && position.x < 945 + 400 + l * 2 && position.y > 247 + 158 && position.y < 247 + 158 + h) && joueur.getPokemon(3).getNom() != "Pokéball vide") // MILIEU DROITE
 		return 3;
-	else if ((position.x >= 349 && position.x < 475 + 400 + l && position.y > 247 + 158 * 2 - 1 && position.y < 247 + 158 * 2 - 1 + h) && joueur.getPokemon(4).getNom() != "Pokéball vide") // BAS GAUCHE
+	else if ((position.x >= 349 && position.x < 475 + l && position.y > 247 + 158 * 2 - 1 && position.y < 247 + 158 * 2 - 1 + h) && joueur.getPokemon(4).getNom() != "Pokéball vide") // BAS GAUCHE
 		return 4;
 	else if ((position.x >= 349 + l && position.x < 945 + 400 + l * 2 && position.y > 247 + 158 * 2 - 1 && position.y < 247 + 158 * 2 - 1 + h) && joueur.getPokemon(5).getNom() != "Pokéball vide") // BAS DROITE
 		return 5;
@@ -517,7 +515,7 @@ void animPokeball(float t, sf::RenderWindow& window) {
 }
 
 //Fonction qui gère la partie Inventaire dans le menu Inventaire du combat
-void gestionInventaire(int& action, int& positionClicInventaire, bool& combat, int i, Joueur& joueur, Pokemon& pokemonEnnemi, sf::RenderWindow& window) {
+void gestionInventaire(int& action, int& positionClicInventaire, bool& combat, string& ecran, int i, Joueur& joueur, Pokemon& pokemonEnnemi, sf::RenderWindow& window) {
 	static string s = "";
 	static bool joueurLance = false;
 	static bool aSoigne = false;
@@ -574,8 +572,12 @@ void gestionInventaire(int& action, int& positionClicInventaire, bool& combat, i
 				HORLOGE_CHOIX.restart();
 				action = 0;
 				positionClicInventaire = 0;
-				if (s == "Capture reussie" || s == "Capture réussie, mais vous êtes déjà complet en Pokémon.") {
+				if (s == "Capture reussie") {
 					combat = false;
+				}
+				else if (s == "Capture réussie, mais vous \nêtes déjà complet en Pokémon.") {
+					combat = false;
+					ecran = "fin";
 				}
 				pokemonEnnemi.getSprite().setColor(sf::Color(255, 255, 255, 255));
 				joueurLance = false;
@@ -588,14 +590,16 @@ void gestionInventaire(int& action, int& positionClicInventaire, bool& combat, i
 			TEXTE.setString("Vous n'avez plus de spray !");
 			positionClicInventaire = 0;
 			action = 0;
+			HORLOGE_CHOIX.restart();
 		}
 		else {
-			if (HORLOGE_CHOIX.getElapsedTime().asSeconds() < 4)
+			if (HORLOGE_CHOIX.getElapsedTime().asSeconds() < 2)
 				TEXTE.setString("Spray utilisé !");
 			else {
 				joueur.getPokemon(i).setEtat(0);
 				positionClicInventaire = 0;
 				action = 0;
+				HORLOGE_CHOIX.restart();
 			}
 		}
 		break;
@@ -704,7 +708,6 @@ void gestionAttaque(int& action, int& competence, bool& combat, Joueur& joueur, 
 				HUD.setTexture(TEXTURE_HUD_TEXTE);
 				TEXTE.setString("Le Pokémon ennemi est paralysé !"); 
 				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
-					cout << "coucou" << endl;
 					competence = 4;
 					joueurJoue = true;
 					HORLOGE_TOUR.restart();
@@ -799,7 +802,7 @@ void gestionAttaque(int& action, int& competence, bool& combat, Joueur& joueur, 
 }
 
 //Fonction qui gère les choix du joueur
-void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActif, int& competence, bool& combat, bool& joueurLance, Joueur& joueur, int& iPokemonActif, Pokemon& pokemonEnnemi, sf::RenderWindow& window) {
+void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActif, int& competence, bool& combat, string& ecran, bool& joueurLance, Joueur& joueur, int& iPokemonActif, Pokemon& pokemonEnnemi, sf::RenderWindow& window) {
 
 	switch (action) {
 	case 0:
@@ -825,7 +828,7 @@ void gestionChoix(int& action, int& clicPositionInventaire, int& clicPokemonActi
 		break;
 	case 3:
 		//Inventaire
-		gestionInventaire(action, clicPositionInventaire, combat, iPokemonActif, joueur, pokemonEnnemi, window);
+		gestionInventaire(action, clicPositionInventaire, combat, ecran, iPokemonActif, joueur, pokemonEnnemi, window);
 		HORLOGE_TOUR.restart();
 		break;
 	case 4:
@@ -866,16 +869,16 @@ bool changementPokemonMort(int& iPokemonActif, Joueur& joueur, int& action, bool
 		for (int i = 0; i < 6; i++) {
 			if (joueur.getPokemon(i).getPv() > 0) {
 				iPokemonActif = i;
-				break;
+				return false;
 			}
-			else {
+			else if ((joueur.getPokemon(i).getNom() != "") || i == 5){
 				TEXTE.setString("Vous avez perdu !");
 				if (HORLOGE_TOUR.getElapsedTime().asSeconds() > 2.0) {
 					HORLOGE_TOUR.restart();
 					action = 0;
 					combat = false;
+					return true;
 				}
-				return true;
 			}
 		}
 	}
@@ -906,16 +909,16 @@ void resetEnnemi(Pokemon pokemon[], int taille) {
 //Fonction qui gère la musique
 void jouerMusique(bool& combat) {
 	if (combat) {
-		MUSIQUE_MAP.stop();
-		if (MUSIQUE_COMBAT.getStatus() == sf::Music::Stopped) {
+		if (MUSIQUE_MAP.getStatus() == sf::Music::Playing)
+			MUSIQUE_MAP.stop();
+		if (MUSIQUE_COMBAT.getStatus() == sf::Music::Stopped)
 			MUSIQUE_COMBAT.play();
-		}
 	}
 	else {
-		MUSIQUE_COMBAT.stop();
-		if (MUSIQUE_MAP.getStatus() == sf::Music::Stopped) {
+		if (MUSIQUE_COMBAT.getStatus() == sf::Music::Playing)
+			MUSIQUE_COMBAT.stop();
+		if (MUSIQUE_MAP.getStatus() == sf::Music::Stopped)
 			MUSIQUE_MAP.play();
-		}
 	}
 }
 
@@ -1103,10 +1106,10 @@ int main()
 				if (!changementPokemonMort(iPokemonActif, joueur, action, combat)) {
 
 					//Affichage de l'HUD.
-					hud(action, joueur);
+					hud(action, joueur, iPokemonActif);
 
 					//Gestion du combat
-					gestionChoix(action, clicPositionInventaire, clicPokemonActif, competence, combat, joueurLance, joueur, iPokemonActif, tabPokemonEnnemi[randomEnnemi], window);
+					gestionChoix(action, clicPositionInventaire, clicPokemonActif, competence, combat, ecran, joueurLance, joueur, iPokemonActif, tabPokemonEnnemi[randomEnnemi], window);
 
 				}
 				else {
